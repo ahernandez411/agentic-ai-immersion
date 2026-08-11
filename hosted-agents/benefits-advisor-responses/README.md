@@ -8,7 +8,9 @@ Skills** (embedded `SKILL.md` guidance). Good for interactive advisory and resea
 - `main.py` — builds the agent and serves it on `ResponsesHostServer` (Toolbox + Skills wired in)
 - `provision_skills.py` — registers the Skills with the project (`beta.skills`)
 - `skills/<name>/SKILL.md` — cost-analysis + regulatory-guidance skills
-- `agent.yaml` / `agent.manifest.yaml`, `Dockerfile`, `requirements.txt`
+- `agent.yaml` / `agent.manifest.yaml` — Foundry agent definition + deploy manifest
+- `requirements.txt` — local and Foundry remote-build dependencies
+- `Dockerfile` — optional container-based deployment path (not used by the source-code steps below)
 - `test_local.py` — build the agent and run one turn against your project
 
 ## Run locally
@@ -16,20 +18,60 @@ Skills** (embedded `SKILL.md` guidance). Good for interactive advisory and resea
 # from repo root, workshop venv active, after `az login`
 python hosted-agents/benefits-advisor-responses/test_local.py
 ```
-Optional tools/skills (repo-root `.env`): `TOOLBOX_NAME=benefits-advisor-tools`,
+Optional tools/skills (repo-root `.env`): `TOOLBOX_NAME=agent-tools`,
 `SKILL_NAMES=cost-analysis-methodology,regulatory-guidance`. If unset, the agent still runs
-(without tools/skills). Full container: `pip install -r requirements.txt && python main.py` (port 8088).
+(without tools/skills). Full host server: `pip install -r requirements.txt && python main.py` (port 8088).
 
-## Deploy
-`azd ai agent init` (pick **ZIP upload**, **Python 3.14**, `main.py`) → `azd deploy`. See [../README.md](../README.md#deploy-to-foundry--step-by-step).
+## Deploy to Azure
 
-## Test after deployment
+Follow the shared [Microsoft Foundry source-code deployment prerequisites](../README.md#deploy-to-microsoft-foundry-azure). From the repository root, provision the Toolbox and managed Skills
+first, then deploy the checked-in `benefits-advisor-responses` agent with Responses 1.0.0:
+
+```powershell
+$env:TOOLBOX_NAME = "agent-tools"
+python AgentOps/src/tools/toolbox_config.py
+python hosted-agents/benefits-advisor-responses/provision_skills.py
+
+Push-Location hosted-agents/benefits-advisor-responses
+
+# First deployment in this directory only. Skip init when the azd environment is already configured.
+azd ai agent init --no-prompt --project-id $ProjectResourceId --agent-name benefits-advisor-responses --model-deployment gpt-5.4-mini --protocol responses --deploy-mode code --runtime python_3_14 --entry-point main.py --dep-resolution remote_build
+azd up
+
+Pop-Location
+```
+
+Wait until the new version is **`active`** before testing. The source ZIP must contain `main.py`,
+`requirements.txt`, and `skills/*/SKILL.md` at its root. The deployment environment must contain
+`AZURE_AI_MODEL_DEPLOYMENT_NAME=gpt-5.4-mini`, `TOOLBOX_NAME=agent-tools`, and
+`SKILL_NAMES=cost-analysis-methodology,regulatory-guidance`.
+
+## Test the Azure deployment
 
 This is the **Responses** protocol: multi-turn, streaming, model-directed tools. Ask conversational questions; it computes/searches and replies with tables.
 
-```bash
-azd ai agent invoke benefits-advisor-responses "What's a competitive retirement match for a 500-employee tech firm in 2026, and how does it compare to market P50?"
+```powershell
+$Endpoint = $env:AI_FOUNDRY_PROJECT_ENDPOINT.TrimEnd("/")
+$Token = az account get-access-token --resource https://ai.azure.com --query accessToken -o tsv
+$Headers = @{ Authorization = "Bearer $Token"; "Content-Type" = "application/json" }
+$Body = @{
+	input = "Use code_interpreter to project the annual cost of 8 extra leave days for 250 staff at 8 hours/day and 60 CU/hour."
+	stream = $false
+} | ConvertTo-Json
+
+Invoke-RestMethod -Method Post `
+	-Uri "$Endpoint/agents/benefits-advisor-responses/endpoint/protocols/openai/responses?api-version=v1" `
+	-Headers $Headers `
+	-Body $Body `
+	-ResponseHeadersVariable ResponseHeaders
+
+$ResponseHeaders["x-agent-session-id"]
 ```
+
+Success is HTTP 200. For the prompt above, inspect `output` for `function_call`,
+`function_call_output`, and `message`, with tool name `code_interpreter` and result `960000`.
+Run question 4 below and confirm a `web_search` call plus current source URLs to validate the other
+Toolbox capability.
 
 More sample questions to try:
 

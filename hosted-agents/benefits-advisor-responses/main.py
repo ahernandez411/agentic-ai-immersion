@@ -143,14 +143,15 @@ def main() -> None:
             headers={"Foundry-Features": "Toolboxes=V1Preview"},
             timeout=120.0,
         )
-        tools = [
-            MCPStreamableHTTPTool(
-                name=toolbox_name,
-                url=_toolbox_endpoint(toolbox_name),
-                http_client=http_client,
-                load_prompts=False,
-            )
-        ]
+        toolbox = MCPStreamableHTTPTool(
+            name=toolbox_name,
+            url=_toolbox_endpoint(toolbox_name),
+            http_client=http_client,
+            load_prompts=False,
+        )
+        # Foundry Toolbox does not implement MCP ping; the default probe terminates the session.
+        toolbox._ping_available = False
+        tools = [toolbox]
         logger.info("Connected Toolbox '%s'.", toolbox_name)
     else:
         logger.info("Running without a Toolbox (TOOLBOX_NAME unset).")

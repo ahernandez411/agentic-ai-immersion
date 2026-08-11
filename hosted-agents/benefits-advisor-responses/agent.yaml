@@ -22,11 +22,9 @@ environment_variables:
     - name: AZURE_AI_MODEL_DEPLOYMENT_NAME
       value: gpt-5.4-mini
     - name: TOOLBOX_NAME
-      value: ""
+      value: agent-tools
     - name: SKILL_NAMES
-      value: ""
-    - name: TOOLBOX_AGENT_TOOLS_MCP_ENDPOINT
-      value: ${TOOLBOX_AGENT_TOOLS_MCP_ENDPOINT}
+      value: cost-analysis-methodology,regulatory-guidance
 code_configuration:
     runtime: python_3_14
     entry_point: main.py

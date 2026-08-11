@@ -84,7 +84,10 @@ def build_agent() -> Agent:
             timeout=120.0,
         )
         url = f"{_project_endpoint().rstrip('/')}/toolboxes/{toolbox_name}/mcp?api-version=v1"
-        tools = [MCPStreamableHTTPTool(name=toolbox_name, url=url, http_client=http_client, load_prompts=False)]
+        toolbox = MCPStreamableHTTPTool(name=toolbox_name, url=url, http_client=http_client, load_prompts=False)
+        # Foundry Toolbox does not implement MCP ping; the default probe terminates the session.
+        toolbox._ping_available = False
+        tools = [toolbox]
         logger.info("Toolbox '%s' connected.", toolbox_name)
 
     client = FoundryChatClient(project_endpoint=_project_endpoint(), model=model, credential=credential)

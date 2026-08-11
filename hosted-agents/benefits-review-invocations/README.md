@@ -7,7 +7,8 @@ and API-to-API pipelines.
 ## Files
 - `main.py` — builds the agent (`FoundryChatClient` → `Agent`) and serves it on `InvocationsHostServer`
 - `agent.yaml` / `agent.manifest.yaml` — Foundry agent definition + deploy manifest
-- `Dockerfile`, `requirements.txt` — container build
+- `requirements.txt` — local and Foundry remote-build dependencies
+- `Dockerfile` — optional container-based deployment path (not used by the source-code steps below)
 - `test_local.py` — build the agent and run one review against your project (no deploy needed)
 
 ## Run locally
@@ -16,18 +17,49 @@ and API-to-API pipelines.
 python hosted-agents/benefits-review-invocations/test_local.py
 ```
 Reads the repo-root `.env` (needs `AI_FOUNDRY_PROJECT_ENDPOINT` + `AZURE_AI_MODEL_DEPLOYMENT_NAME`).
-Run the full container with `pip install -r requirements.txt && python main.py` (port 8088).
+Run the full host server with `pip install -r requirements.txt && python main.py` (port 8088).
 
-## Deploy
-`azd ai agent init` (pick **ZIP upload**, **Python 3.14**, `main.py`) → `azd deploy`. See [../README.md](../README.md#deploy-to-foundry--step-by-step).
+## Deploy to Azure
 
-## Test after deployment
+Follow the shared [Microsoft Foundry source-code deployment prerequisites](../README.md#deploy-to-microsoft-foundry-azure), then run the following from the repository root. This deploys the
+checked-in name `benefits-review-invocations` with Python 3.14 remote build and Invocations 1.0.0.
+
+```powershell
+Push-Location hosted-agents/benefits-review-invocations
+
+# First deployment in this directory only. Skip init when the azd environment is already configured.
+azd ai agent init --no-prompt --project-id $ProjectResourceId --agent-name benefits-review-invocations --model-deployment gpt-5.4-mini --protocol invocations --deploy-mode code --runtime python_3_14 --entry-point main.py --dep-resolution remote_build
+azd up
+
+Pop-Location
+```
+
+Wait until the new version is **`active`** before testing. The remote-build ZIP must have
+`main.py` and `requirements.txt` at its root; don't wrap them in another folder. A code or manifest
+change creates a new version, so select the latest active version in the portal.
+
+## Test the Azure deployment
 
 This is the **Invocations** protocol: send one structured benefits program, get one Markdown review back. The payload must be **JSON with a `message` field** (a plain string returns HTTP 500 — the server calls `request.json()`).
 
-```bash
-azd ai agent invoke benefits-review-invocations '{"message":"Review this employee benefits program: 200-employee fintech; basic health (employee only), 5% match, 12 days leave, no life/dental/parental."}'
+```powershell
+$Endpoint = $env:AI_FOUNDRY_PROJECT_ENDPOINT.TrimEnd("/")
+$Token = az account get-access-token --resource https://ai.azure.com --query accessToken -o tsv
+$Headers = @{ Authorization = "Bearer $Token"; "Content-Type" = "application/json" }
+$Body = @{ message = "Review this employee benefits program: 200-employee fintech; basic health (employee only), 5% match, 12 days leave, no life/dental/parental." } | ConvertTo-Json
+
+Invoke-RestMethod -Method Post `
+	-Uri "$Endpoint/agents/benefits-review-invocations/endpoint/protocols/invocations?api-version=v1" `
+	-Headers $Headers `
+	-Body $Body `
+	-ResponseHeadersVariable ResponseHeaders
+
+$ResponseHeaders["x-agent-session-id"]
 ```
+
+Success is HTTP 200 with all five sections: **Summary**, **Strengths**, **Gaps**,
+**Benchmark Positioning**, and **Recommendations**. Save the `x-agent-session-id` response header
+when troubleshooting; it identifies the hosted container session.
 
 More sample payloads to try:
 
