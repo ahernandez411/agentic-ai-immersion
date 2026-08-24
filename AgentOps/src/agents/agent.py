@@ -39,8 +39,8 @@ _CONFIG = _HERE / "agent_config.json"
 
 
 def _project_endpoint() -> str:
-    """Foundry project endpoint (injected when hosted; workshop var locally)."""
-    return os.environ.get("FOUNDRY_PROJECT_ENDPOINT") or os.environ["AI_FOUNDRY_PROJECT_ENDPOINT"]
+    """Foundry project endpoint (auto-injected when hosted; from .env locally)."""
+    return os.environ["FOUNDRY_PROJECT_ENDPOINT"]
 
 
 def load_config() -> dict:

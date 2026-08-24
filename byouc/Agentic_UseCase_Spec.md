@@ -207,7 +207,7 @@ Tech stack (must use):
 - If user chose "Web app" in §7: build a web UI using Gradio, FastAPI, or similar framework
 - If user chose "Notebook" in §7: create a single Jupyter notebook (.ipynb) with all code in runnable cells so the user can execute it top-to-bottom and see results inline
 - FunctionTool definitions with Annotated type hints and Pydantic Field descriptions
-- dotenv for environment variable loading (AI_FOUNDRY_PROJECT_ENDPOINT, AZURE_AI_MODEL_DEPLOYMENT_NAME, TENANT_ID)
+- dotenv for environment variable loading (FOUNDRY_PROJECT_ENDPOINT, AZURE_AI_MODEL_DEPLOYMENT_NAME, TENANT_ID)
 
 Plan deliverables — output a numbered plan covering:
 a) Folder structure under the new root-level folder (e.g., `<use-case-name>/src/`, `<use-case-name>/tests/`, etc.)

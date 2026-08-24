@@ -42,7 +42,7 @@ All notebooks feature **business use cases** including advisory services, approv
 
    ```bash
    # Microsoft Foundry Project
-   AI_FOUNDRY_PROJECT_ENDPOINT=https://<account>.services.ai.azure.com/api/projects/<project>
+   FOUNDRY_PROJECT_ENDPOINT=https://<account>.services.ai.azure.com/api/projects/<project>
    TENANT_ID=your-tenant-id
    AZURE_AI_MODEL_DEPLOYMENT_NAME=gpt-5.4
 

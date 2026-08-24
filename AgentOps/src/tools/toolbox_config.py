@@ -22,7 +22,7 @@ TOOLBOX_NAME = os.environ.get("TOOLBOX_NAME", "benefits-concierge-tools")
 
 
 def main() -> None:
-    endpoint = os.environ.get("FOUNDRY_PROJECT_ENDPOINT") or os.environ["AI_FOUNDRY_PROJECT_ENDPOINT"]
+    endpoint = os.environ["FOUNDRY_PROJECT_ENDPOINT"]
     with AIProjectClient(endpoint=endpoint, credential=DefaultAzureCredential(), allow_preview=True) as client:
         # Each tool needs a unique 'name' identifier when more than one is present.
         version = client.beta.toolboxes.create_version(

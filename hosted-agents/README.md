@@ -36,7 +36,7 @@ single, generic FSI scenario — **employee benefits**. You supply the agent cod
    use **Foundry Agent Consumer**; developers can use **Foundry User**.
 - **Python 3.13+** locally. These checked-in manifests and remote builds are validated with the
    Foundry `python_3_14` hosted runtime.
-- A repo-root `.env` containing `AI_FOUNDRY_PROJECT_ENDPOINT` and
+- A repo-root `.env` containing `FOUNDRY_PROJECT_ENDPOINT` and
    `AZURE_AI_MODEL_DEPLOYMENT_NAME=gpt-5.4-mini`. No API key is required; the code uses
    `DefaultAzureCredential`.
 

@@ -45,7 +45,7 @@ def _parse_skill(skill_md: Path) -> tuple[str, str, str]:
 
 
 def main() -> None:
-    endpoint = os.environ.get("FOUNDRY_PROJECT_ENDPOINT") or os.environ["AI_FOUNDRY_PROJECT_ENDPOINT"]
+    endpoint = os.environ["FOUNDRY_PROJECT_ENDPOINT"]
     with AIProjectClient(endpoint=endpoint, credential=DefaultAzureCredential(), allow_preview=True) as client:
         for skill_md in sorted(SKILLS_DIR.glob("*/SKILL.md")):
             name, description, instructions = _parse_skill(skill_md)

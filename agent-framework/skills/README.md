@@ -33,4 +33,4 @@ fsi-skills/
 
 - `microsoft-agent-framework` package installed
 - Azure CLI authenticated (`az login`)
-- `.env` with `AI_FOUNDRY_PROJECT_ENDPOINT` and `AZURE_AI_MODEL_DEPLOYMENT_NAME`
+- `.env` with `FOUNDRY_PROJECT_ENDPOINT` and `AZURE_AI_MODEL_DEPLOYMENT_NAME`

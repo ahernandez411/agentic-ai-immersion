@@ -33,14 +33,14 @@ byouc/                      # Bring Your Own Use Case templates
 
 ### Authentication Pattern
 
-Always use `DefaultAzureCredential`. The project endpoint is in `.env` as `AI_FOUNDRY_PROJECT_ENDPOINT`:
+Always use `DefaultAzureCredential`. The project endpoint is in `.env` as `FOUNDRY_PROJECT_ENDPOINT`:
 
 ```python
 from azure.identity import DefaultAzureCredential
 from azure.ai.projects import AIProjectClient
 
 project_client = AIProjectClient(
-    endpoint=os.environ["AI_FOUNDRY_PROJECT_ENDPOINT"],
+    endpoint=os.environ["FOUNDRY_PROJECT_ENDPOINT"],
     credential=DefaultAzureCredential(),
 )
 agents_client = project_client.agents  # access agents via project client
@@ -49,7 +49,7 @@ agents_client = project_client.agents  # access agents via project client
 ### Environment Variables
 
 All config is in `.env` at the repo root. Key variables:
-- `AI_FOUNDRY_PROJECT_ENDPOINT` — Foundry project endpoint
+- `FOUNDRY_PROJECT_ENDPOINT` — Foundry project endpoint
 - `AZURE_AI_MODEL_DEPLOYMENT_NAME` — Model deployment (gpt-5.4)
 - `AZURE_AI_SEARCH_ENDPOINT` / `AZURE_SEARCH_INDEX_NAME` — AI Search config
 - `FOUNDRY_MCP_CONNECTION_ID` — MCP server connection
@@ -218,7 +218,7 @@ client = AIProjectClient(
 ### Environment Variables
 
 ```bash
-AI_FOUNDRY_PROJECT_ENDPOINT=https://<resource>.services.ai.azure.com/api/projects/<project>
+FOUNDRY_PROJECT_ENDPOINT=https://<resource>.services.ai.azure.com/api/projects/<project>
 AZURE_AI_MODEL_DEPLOYMENT_NAME=gpt-5.4
 ```
 

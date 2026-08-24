@@ -183,7 +183,7 @@ az account show    # confirm the right subscription is active
 #### Step 4: Create your Foundry project & deploy models
 
 1. **Create a Foundry resource** — [ai.azure.com](https://ai.azure.com) → **Create project** (creates the account + a project + default storage); pick a region like East US 2.
-2. **Deploy models** — project → **Models + endpoints** → **Deploy** each of `gpt-5.4`, `gpt-5.4-mini`, `text-embedding-3-large` (status “Succeeded” after a few minutes).
+2. **Deploy models** — project → **Models + endpoints** → **Deploy** each of `gpt-5.4`, `gpt-5.4-mini`, `gpt-5.4-nano`, `text-embedding-3-large` (status “Succeeded” after a few minutes). The `-mini` and `-nano` tiers are what [13-model-router.ipynb](azure-ai-agents/13-model-router.ipynb) routes across; it skips any tier you haven't deployed.
 3. **Connect services** — add Azure AI Search + Application Insights connections (project → **Connections**) for the search/observability notebooks.
 
 For detailed setup, see [Microsoft Foundry Documentation](https://learn.microsoft.com/en-us/azure/ai-foundry/).
@@ -194,13 +194,16 @@ For detailed setup, see [Microsoft Foundry Documentation](https://learn.microsof
 2. Fill in the values from the project you just created. **`.env.example` is the annotated source of truth** for every variable — the essentials are:
 
 ```env
-# Microsoft Foundry project (azure-ai-agents/ + observability notebooks)
-AI_FOUNDRY_PROJECT_ENDPOINT=https://<your-foundry>.services.ai.azure.com/api/projects/<your-project>
+# Microsoft Foundry project — one endpoint shared by every notebook and agent
+FOUNDRY_PROJECT_ENDPOINT=https://<your-foundry>.services.ai.azure.com/api/projects/<your-project>
 AZURE_AI_MODEL_DEPLOYMENT_NAME=gpt-5.4
 EMBEDDING_MODEL_DEPLOYMENT_NAME=text-embedding-3-large
 
+# Cheaper tiers for 13-model-router.ipynb
+MODEL_DEPLOYMENT_NAME_MINI=gpt-5.4-mini
+MODEL_DEPLOYMENT_NAME_NANO=gpt-5.4-nano
+
 # Agent Framework Foundry client convention (agent-framework/ notebooks)
-FOUNDRY_PROJECT_ENDPOINT=https://<your-foundry>.services.ai.azure.com/api/projects/<your-project>
 FOUNDRY_MODEL=gpt-5.4
 
 # Azure OpenAI v1 surface (agent-framework workflows / middleware / threads)
@@ -308,7 +311,7 @@ az storage account update -n $STORAGE -g $RG --public-network-access Enabled
 ### Step 7: Verify your setup ✅
 
 ```powershell
-python -c "from dotenv import load_dotenv; load_dotenv(); import os; from azure.identity import DefaultAzureCredential; from azure.ai.projects import AIProjectClient; AIProjectClient(endpoint=os.environ['AI_FOUNDRY_PROJECT_ENDPOINT'], credential=DefaultAzureCredential()); print('✅ Connected to Foundry')"
+python -c "from dotenv import load_dotenv; load_dotenv(); import os; from azure.identity import DefaultAzureCredential; from azure.ai.projects import AIProjectClient; AIProjectClient(endpoint=os.environ['FOUNDRY_PROJECT_ENDPOINT'], credential=DefaultAzureCredential()); print('✅ Connected to Foundry')"
 ```
 
 Then open `azure-ai-agents/1-basics.ipynb` and run the first cell — clean output means you're ready. A `401/403` means roles are still propagating; wait 5–10 min and retry.

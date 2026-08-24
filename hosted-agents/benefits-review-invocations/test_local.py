@@ -1,9 +1,8 @@
 # Local smoke test for the Employee Benefits Review (Invocations agent).
 """Builds the agent against your Foundry project and runs one structured review.
 
-Prereqs: `az login`, plus FOUNDRY_PROJECT_ENDPOINT (or the workshop's
-AI_FOUNDRY_PROJECT_ENDPOINT) and AZURE_AI_MODEL_DEPLOYMENT_NAME in the environment
-or a .env file.
+Prereqs: `az login`, plus FOUNDRY_PROJECT_ENDPOINT and
+AZURE_AI_MODEL_DEPLOYMENT_NAME in the environment or a .env file.
 
 Run:  python test_local.py
 """

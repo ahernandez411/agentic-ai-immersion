@@ -97,8 +97,8 @@ def _resolved_env(name: str) -> str:
 
 
 def _project_endpoint() -> str:
-    """Foundry project endpoint (injected when hosted; falls back to the workshop var locally)."""
-    return os.environ.get("FOUNDRY_PROJECT_ENDPOINT") or os.environ["AI_FOUNDRY_PROJECT_ENDPOINT"]
+    """Foundry project endpoint (auto-injected when hosted; from .env locally)."""
+    return os.environ["FOUNDRY_PROJECT_ENDPOINT"]
 
 
 def _toolbox_endpoint(toolbox_name: str) -> str:

@@ -51,7 +51,7 @@ Wait until the new version is **`active`** before testing. The source ZIP must c
 This is the **Responses** protocol: multi-turn, streaming, model-directed tools. Ask conversational questions; it computes/searches and replies with tables.
 
 ```powershell
-$Endpoint = $env:AI_FOUNDRY_PROJECT_ENDPOINT.TrimEnd("/")
+$Endpoint = $env:FOUNDRY_PROJECT_ENDPOINT.TrimEnd("/")
 $Token = az account get-access-token --resource https://ai.azure.com --query accessToken -o tsv
 $Headers = @{ Authorization = "Bearer $Token"; "Content-Type" = "application/json" }
 $Body = @{

@@ -16,7 +16,7 @@ and API-to-API pipelines.
 # from repo root, workshop venv active, after `az login`
 python hosted-agents/benefits-review-invocations/test_local.py
 ```
-Reads the repo-root `.env` (needs `AI_FOUNDRY_PROJECT_ENDPOINT` + `AZURE_AI_MODEL_DEPLOYMENT_NAME`).
+Reads the repo-root `.env` (needs `FOUNDRY_PROJECT_ENDPOINT` + `AZURE_AI_MODEL_DEPLOYMENT_NAME`).
 Run the full host server with `pip install -r requirements.txt && python main.py` (port 8088).
 
 ## Deploy to Azure
@@ -43,7 +43,7 @@ change creates a new version, so select the latest active version in the portal.
 This is the **Invocations** protocol: send one structured benefits program, get one Markdown review back. The payload must be **JSON with a `message` field** (a plain string returns HTTP 500 — the server calls `request.json()`).
 
 ```powershell
-$Endpoint = $env:AI_FOUNDRY_PROJECT_ENDPOINT.TrimEnd("/")
+$Endpoint = $env:FOUNDRY_PROJECT_ENDPOINT.TrimEnd("/")
 $Token = az account get-access-token --resource https://ai.azure.com --query accessToken -o tsv
 $Headers = @{ Authorization = "Bearer $Token"; "Content-Type" = "application/json" }
 $Body = @{ message = "Review this employee benefits program: 200-employee fintech; basic health (employee only), 5% match, 12 days leave, no life/dental/parental." } | ConvertTo-Json

@@ -14,13 +14,14 @@
     written at the end. Safe to launch once and leave; it waits for everything.
 
 .PARAMETER Timeout
-    Per-notebook execution timeout (seconds). Default 420.
+    Per-notebook execution timeout (seconds). Default 900 — the magentic
+    multi-agent workflows legitimately run past 7 minutes.
 
 .EXAMPLE
     pwsh -NoProfile -File scripts/run-workshop-validation.ps1
 #>
 param(
-    [int]$Timeout = 420,
+    [int]$Timeout = 900,
     [string[]]$Areas = @('azure-ai-agents', 'agent-framework', 'observability-and-evaluations')
 )
 

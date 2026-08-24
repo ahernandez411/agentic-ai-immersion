@@ -13,7 +13,7 @@ load_dotenv(ROOT.parent / ".env")  # workshop root .env
 load_dotenv(ROOT / ".env")          # AgentOps-local .env (if any)
 
 pytestmark = pytest.mark.skipif(
-    not (os.environ.get("AI_FOUNDRY_PROJECT_ENDPOINT") or os.environ.get("FOUNDRY_PROJECT_ENDPOINT")),
+    not os.environ.get("FOUNDRY_PROJECT_ENDPOINT"),
     reason="No Foundry endpoint configured",
 )
 

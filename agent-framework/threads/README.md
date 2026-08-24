@@ -23,7 +23,7 @@ This folder contains examples demonstrating thread management patterns with Azur
 
 2. **Environment Variables** (in root `.env` file):
    ```
-   AI_FOUNDRY_PROJECT_ENDPOINT=your-project-endpoint
+   FOUNDRY_PROJECT_ENDPOINT=your-project-endpoint
    AZURE_OPENAI_ENDPOINT=your-openai-endpoint
    AZURE_AI_MODEL_DEPLOYMENT_NAME=gpt-5.4
    ```
