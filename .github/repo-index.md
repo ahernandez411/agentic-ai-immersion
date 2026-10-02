@@ -29,6 +29,8 @@
   `terraform.tfvars.example` configure Azure placement, naming, networking, models and capacity; Terraform owns
   the VNet/private DNS, identity, Storage, Cosmos DB, AI Search, Foundry project/capability host, monitoring,
   registry and vault. Outputs map directly to the workshop `.env`; no concrete Azure identifiers are committed.
+  `post-deploy-validation.sh` reuses Azure CLI credentials, verifies the tfvars-selected Azure context and
+  Foundry resources, and runs a mini-model Responses API smoke test.
 - Deployment: each lab's `hosted*/main.py` and minimal pinned requirements; `prepare.py` vendors shared files. Generated packages, credentials and runtime artifacts are not source.
 - Shell integration: `labs/deployment.py`; Bash is the learner shell, Python holds deployment validation/logic.
 - Notebooks: edit the adjacent `# %%` Python driver and regenerate with `tools/py_to_ipynb.py`; preserve exercise gates.
@@ -81,3 +83,6 @@ Baseline for the sanitized workshop infrastructure addition: `2798ac5d51e00ed6d4
 Pending structural change considered: `build-and-operate-foundry-agents/infra/`, including the deployment
 README, ignored local tfvars convention, provider lock, complete Standard Agent resource graph and workshop
 environment outputs. This supersedes the registry-coupled draft and its PowerShell-only deployment checks.
+Baseline for the post-deployment validator: `15f9fdbca29b5137618ff947009cfa58d45e504f`.
+Pending structural change considered: `build-and-operate-foundry-agents/infra/post-deploy-validation.sh`
+and its README/index navigation updates.

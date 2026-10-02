@@ -162,6 +162,20 @@ virtual network:
 python build-and-operate-foundry-agents/tools/preflight.py
 ```
 
+Run the post-deployment management-plane and model smoke tests from this
+directory:
+
+```bash
+bash post-deploy-validation.sh
+```
+
+The script reads tenant, subscription, location, naming, project, and model
+values from `terraform.tfvars`. It reuses an existing Azure CLI session when
+possible, selects the configured subscription, and starts device-code login only
+when usable cached credentials are unavailable. Because the Foundry data plane
+is private, the final mini-model inference check requires the configured private
+DNS and network path.
+
 Hosted agents receive a platform-assigned identity that is separate from the
 project identity. After each first hosted-agent deployment, grant that identity
 access to optional external resources it uses, such as `Search Index Data Reader`
