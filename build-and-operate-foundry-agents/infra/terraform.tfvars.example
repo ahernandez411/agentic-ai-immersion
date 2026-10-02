@@ -20,6 +20,11 @@ foundry_project_display_name = "Build and Operate Foundry Agents"
 foundry_project_description  = "Private Microsoft Foundry project for the Build and Operate Foundry Agents workshop."
 capability_host_name         = "caphostproj"
 
+# Set these only when validating an existing deployment whose names do not
+# follow this root's naming convention.
+# validation_resource_group_name  = "existing-resource-group"
+# validation_foundry_account_name = "existing-foundry-account"
+
 # Private network. The agent subnet must be /27 or larger; /24 is recommended.
 virtual_network_address_space          = "192.168.0.0/16"
 agent_subnet_address_prefix            = "192.168.0.0/24"

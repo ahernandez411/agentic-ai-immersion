@@ -109,6 +109,20 @@ variable "foundry_project_description" {
   default     = "Private Microsoft Foundry project for the Build and Operate Foundry Agents workshop."
 }
 
+variable "validation_resource_group_name" {
+  description = "Optional existing resource group name used only by post-deploy-validation.sh when it differs from this root's naming convention."
+  type        = string
+  default     = null
+  nullable    = true
+}
+
+variable "validation_foundry_account_name" {
+  description = "Optional existing Foundry account name used only by post-deploy-validation.sh when it differs from this root's naming convention."
+  type        = string
+  default     = null
+  nullable    = true
+}
+
 variable "virtual_network_address_space" {
   description = "RFC 1918 address space for the workshop virtual network."
   type        = string
