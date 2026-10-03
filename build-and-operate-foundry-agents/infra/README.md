@@ -176,6 +176,22 @@ when usable cached credentials are unavailable. Because the Foundry data plane
 is private, the final mini-model inference check requires the configured private
 DNS and network path.
 
+For a full private-endpoint investigation, run:
+
+```bash
+./troubleshoot-private-endpoint.sh
+```
+
+The troubleshooting script reads the target tenant, subscription, region, and
+resource names from `terraform.tfvars`; it reuses cached Azure CLI credentials
+and starts device-code login only when needed. It continues through read
+permission failures and checks the deployed resource inventory, Foundry and
+operator RBAC, VNet and subnet configuration, NSGs, private endpoint approval
+and NIC addresses, private DNS zones and VNet links, service public-access
+settings, local hostname resolution, managed-identity roles, and recent failed
+Azure operations. Its final table reports every executed resource check as
+`PASS` or `FAIL` and identifies the most likely fault domain.
+
 Hosted agents receive a platform-assigned identity that is separate from the
 project identity. After each first hosted-agent deployment, grant that identity
 access to optional external resources it uses, such as `Search Index Data Reader`
