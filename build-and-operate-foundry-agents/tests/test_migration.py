@@ -592,7 +592,8 @@ class DeploymentTests(unittest.TestCase):
         client = MagicMock()
         client.embeddings.with_raw_response.create.side_effect = [rate_limit, response]
 
-        with patch.object(module, "AzureOpenAI", return_value=client), \
+        with patch.object(module, "aoai_resource_url", return_value="https://example.openai.azure.com"), \
+                patch.object(module, "AzureOpenAI", return_value=client), \
                 patch.object(module, "get_bearer_token_provider"), \
                 patch.object(module.time, "sleep") as sleep:
             embed = module.make_embedder(MagicMock())
