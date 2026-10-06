@@ -105,8 +105,19 @@ terraform init -upgrade
 terraform fmt -check
 terraform validate
 terraform plan -out main.tfplan
-terraform apply main.tfplan
 ```
+
+Apply with `apply.sh` instead of plain `terraform apply main.tfplan`. On a network with
+corporate DNS gaps for per-resource Azure hostnames (a known issue on some corporate
+networks — see the troubleshooting section in `NON-DOCKER-SETUP.md`), it automatically
+patches `/etc/hosts` from the deployment's real outputs and writes them into the
+repository-root `.env`, and it diagnoses known failure patterns with their fixes:
+
+```bash
+bash apply.sh main.tfplan
+```
+
+(Plain `terraform apply main.tfplan` still works if you'd rather handle DNS/`.env` yourself.)
 
 The AzureRM provider registers the resource providers used by this template. If
 your organization restricts provider registration, have an administrator register
@@ -129,7 +140,9 @@ After apply, inspect the nonsecret outputs:
 terraform output
 ```
 
-Write the workshop settings to an ignored local file:
+If you applied with `apply.sh`, the repository-root `.env` already has these values (in an
+auto-managed block that's safe to delete — rerunning `apply.sh` regenerates it, and nothing
+else in `.env` is touched). Otherwise, write them in yourself:
 
 ```bash
 terraform output -raw workshop_env > workshop.env

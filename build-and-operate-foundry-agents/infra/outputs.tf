@@ -93,6 +93,11 @@ output "cosmos_db_account_id" {
   value       = azurerm_cosmosdb_account.foundry.id
 }
 
+output "cosmos_db_endpoint" {
+  description = "Azure Cosmos DB endpoint hostname."
+  value       = azurerm_cosmosdb_account.foundry.endpoint
+}
+
 output "storage_account_id" {
   description = "Resource ID of the Azure Storage account."
   value       = module.storage.resource_id
@@ -111,6 +116,11 @@ output "marketplace_blob_container_name" {
 output "key_vault_id" {
   description = "Resource ID of Azure Key Vault."
   value       = module.key_vault.resource_id
+}
+
+output "key_vault_uri" {
+  description = "Azure Key Vault URI (vault.azure.net hostname)."
+  value       = module.key_vault.uri
 }
 
 output "container_registry_id" {
