@@ -7,10 +7,14 @@ module "key_vault" {
   resource_group_name           = module.resource_group.name
   tenant_id                     = var.tenant_id
   public_network_access_enabled = true
-  purge_protection_enabled      = true
-  soft_delete_retention_days    = 7
-  enable_telemetry              = false
-  tags                          = local.tags
+  # Purge protection intentionally off: this is a disposable workshop
+  # environment, and purge protection cannot be turned back off on a vault
+  # once it's been enabled (an Azure platform restriction) -- it would force
+  # a 7-day soft-delete wait on every destroy, forever, for this vault name.
+  purge_protection_enabled   = false
+  soft_delete_retention_days = 7
+  enable_telemetry           = false
+  tags                       = local.tags
 
   role_assignments = {
     foundry_secrets = {

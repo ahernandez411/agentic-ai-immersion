@@ -41,6 +41,15 @@ provider "azurerm" {
     resource_group {
       prevent_deletion_if_contains_resources = false
     }
+    # Make destroy behavior explicit rather than relying on provider defaults:
+    # fully purge Key Vaults on destroy (works now that purge_protection_enabled
+    # is false), and recover a same-named soft-deleted vault on create instead
+    # of erroring -- lets the deterministic key_vault_name survive a
+    # destroy/apply cycle.
+    key_vault {
+      purge_soft_delete_on_destroy    = true
+      recover_soft_deleted_key_vaults = true
+    }
   }
 }
 
