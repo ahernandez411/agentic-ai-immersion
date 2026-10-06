@@ -230,7 +230,7 @@ variable "model_deployments" {
       model_version   = "2026-07-09"
       model_format    = "OpenAI"
       sku_name        = "GlobalStandard"
-      capacity        = 1
+      capacity        = 20
     }
     gpt_5_4_mini = {
       deployment_name = "gpt-5.4-mini"
@@ -238,7 +238,7 @@ variable "model_deployments" {
       model_version   = "2026-03-17"
       model_format    = "OpenAI"
       sku_name        = "GlobalStandard"
-      capacity        = 1
+      capacity        = 20
     }
     gpt_5_4_nano = {
       deployment_name = "gpt-5.4-nano"
@@ -246,7 +246,7 @@ variable "model_deployments" {
       model_version   = "2026-03-17"
       model_format    = "OpenAI"
       sku_name        = "GlobalStandard"
-      capacity        = 1
+      capacity        = 20
     }
     text_embedding_3_large = {
       deployment_name = "text-embedding-3-large"
@@ -254,7 +254,7 @@ variable "model_deployments" {
       model_version   = "1"
       model_format    = "OpenAI"
       sku_name        = "GlobalStandard"
-      capacity        = 1
+      capacity        = 20
     }
   }
 
