@@ -108,6 +108,20 @@ patch_dns_for_hosts() {
   fi
 }
 
+# Removes the DNS workaround block from /etc/hosts entirely, with nothing to
+# replace it (used by tf-destroy.sh once the resources it described are gone).
+clear_dns_block() {
+  local marker_start="# --- tf-apply.sh/tf-destroy.sh DNS workaround (auto-managed; safe to delete) ---"
+  local marker_end="# --- end DNS workaround ---"
+
+  if grep -qF "$marker_start" /etc/hosts 2>/dev/null; then
+    sudo sed -i "/$(printf '%s' "$marker_start" | sed 's/[.[\*^$/]/\\&/g')/,/$(printf '%s' "$marker_end" | sed 's/[.[\*^$/]/\\&/g')/d" /etc/hosts
+    echo "Cleared the DNS workaround block from /etc/hosts (those resources no longer exist)."
+  else
+    echo "No DNS workaround block found in /etc/hosts; nothing to clear."
+  fi
+}
+
 # Removes the auto-managed workshop_env block from the repository-root .env
 # (used by tf-destroy.sh once the resources it describes no longer exist).
 clear_env_block() {
@@ -260,6 +274,17 @@ quota resets every minute."
     "Already worked around in this config: standard-agent.tf creates the account-level
 capability host with empty properties (no enablePublicHostingEnvironment, no customerSubnet),
 which is what the live API actually accepts despite its own docs showing otherwise."
+
+  _check_issue \
+    'RequestConflict.*provisioning state is not terminal|provisioning state .* is not terminal' \
+    "409 Conflict purging the Foundry/Cognitive Services account during destroy" \
+    "Transient timing race: the purge call for the soft-deleted account fires just before its
+own deletion has fully settled on Azure's side. The account is almost always already gone by
+the time you see this -- confirm with:
+  az cognitiveservices account list-deleted -o table
+If it's not listed (or the error doesn't recur), the destroy already succeeded; just rerun
+tf-destroy.sh and it will report nothing left to do. If it keeps recurring, increase
+time_sleep.foundry_purge_cooldown's duration in standard-agent.tf (currently 60s)."
 
   unset -f _check_issue
 }

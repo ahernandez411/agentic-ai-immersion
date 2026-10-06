@@ -10,8 +10,9 @@
 #      same corporate-DNS gap tf-apply.sh works around.
 #   3. terraform destroy -- its normal interactive plan review and typed
 #      confirmation (not just "yes") stays intact; nothing here bypasses it.
-#   4. On a successful destroy, clears the auto-managed workshop_env block
-#      from the repository-root .env, since those endpoints no longer exist.
+#   4. On a successful destroy, clears the DNS workaround from /etc/hosts and
+#      the auto-managed workshop_env block from the repository-root .env,
+#      since those hostnames/endpoints no longer exist.
 #   5. Whether it succeeded or failed, scans the captured output for error
 #      patterns hit during this workshop's setup and prints the specific fix
 #      for each one found.
@@ -66,10 +67,13 @@ fi
 DESTROY_EXIT=$STEP_EXIT
 
 # ---------------------------------------------------------------------------
-# Step 4: on success, clear the stale workshop_env block from .env -- those
-# endpoints no longer exist.
+# Step 4: on success, clear the DNS workaround from /etc/hosts and the
+# workshop_env block from .env -- those resources/endpoints no longer exist.
 # ---------------------------------------------------------------------------
 if ((DESTROY_EXIT == 0)); then
+  status "Clearing the DNS workaround from /etc/hosts"
+  clear_dns_block
+
   status "Clearing the workshop_env block from the repository-root .env"
   clear_env_block "$SCRIPT_DIR/../../.env"
 fi
