@@ -1,3 +1,9 @@
+resource "random_string" "key_vault_suffix" {
+  length  = 4
+  special = false
+  upper   = false
+}
+
 module "key_vault" {
   source  = "Azure/avm-res-keyvault-vault/azurerm"
   version = "0.11.0"
