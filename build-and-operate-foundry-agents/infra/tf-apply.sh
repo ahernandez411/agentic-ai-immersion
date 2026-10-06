@@ -41,15 +41,15 @@ LOG_FILE="$LOG_DIR/apply-$(date +%Y%m%d-%H%M%S).log"
 # ---------------------------------------------------------------------------
 STEP_EXIT=0
 
-run_step "$LOG_FILE" "terraform init -upgrade" terraform init -upgrade -input=false || STEP_EXIT=$?
+run_step "$LOG_FILE" "terraform init -upgrade" terraform init -upgrade -input=false -no-color || STEP_EXIT=$?
 if ((STEP_EXIT == 0)); then
-  run_step "$LOG_FILE" "terraform fmt" terraform fmt || STEP_EXIT=$?
+  run_step "$LOG_FILE" "terraform fmt" terraform fmt -no-color || STEP_EXIT=$?
 fi
 if ((STEP_EXIT == 0)); then
-  run_step "$LOG_FILE" "terraform validate" terraform validate || STEP_EXIT=$?
+  run_step "$LOG_FILE" "terraform validate" terraform validate -no-color || STEP_EXIT=$?
 fi
 if ((STEP_EXIT == 0)); then
-  run_step "$LOG_FILE" "terraform apply" terraform apply || STEP_EXIT=$?
+  run_step "$LOG_FILE" "terraform apply" terraform apply -no-color || STEP_EXIT=$?
 fi
 
 APPLY_EXIT=$STEP_EXIT

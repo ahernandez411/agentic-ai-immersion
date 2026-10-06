@@ -36,9 +36,9 @@ LOG_FILE="$LOG_DIR/destroy-$(date +%Y%m%d-%H%M%S).log"
 # ---------------------------------------------------------------------------
 STEP_EXIT=0
 
-run_step "$LOG_FILE" "terraform init -upgrade" terraform init -upgrade -input=false || STEP_EXIT=$?
+run_step "$LOG_FILE" "terraform init -upgrade" terraform init -upgrade -input=false -no-color || STEP_EXIT=$?
 if ((STEP_EXIT == 0)); then
-  run_step "$LOG_FILE" "terraform validate" terraform validate || STEP_EXIT=$?
+  run_step "$LOG_FILE" "terraform validate" terraform validate -no-color || STEP_EXIT=$?
 fi
 
 # ---------------------------------------------------------------------------
@@ -60,7 +60,7 @@ fi
 # Step 3: terraform destroy, with its normal interactive confirmation.
 # ---------------------------------------------------------------------------
 if ((STEP_EXIT == 0)); then
-  run_step "$LOG_FILE" "terraform destroy" terraform destroy || STEP_EXIT=$?
+  run_step "$LOG_FILE" "terraform destroy" terraform destroy -no-color || STEP_EXIT=$?
 fi
 
 DESTROY_EXIT=$STEP_EXIT
