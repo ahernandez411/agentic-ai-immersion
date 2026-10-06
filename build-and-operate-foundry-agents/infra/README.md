@@ -98,26 +98,21 @@ not need, but keep the entries selected by `chat_model_deployment_key` and
 
 ## Deploy
 
-Format and validate the configuration, then review and apply a saved plan:
+Run the whole workflow — `init -upgrade`, `fmt`, `validate`, then `apply` with its normal
+interactive plan review and "yes" confirmation prompt — with one command:
 
 ```bash
-terraform init -upgrade
-terraform fmt -check
-terraform validate
-terraform plan -out main.tfplan
+bash apply.sh
 ```
 
-Apply with `apply.sh` instead of plain `terraform apply main.tfplan`. On a network with
-corporate DNS gaps for per-resource Azure hostnames (a known issue on some corporate
-networks — see the troubleshooting section in `NON-DOCKER-SETUP.md`), it automatically
-patches `/etc/hosts` from the deployment's real outputs and writes them into the
-repository-root `.env`, and it diagnoses known failure patterns with their fixes:
+It stops immediately if any step fails. On a successful apply, it also automatically patches
+`/etc/hosts` from the deployment's real outputs (a workaround for corporate DNS gaps on some
+networks — see the troubleshooting section in `NON-DOCKER-SETUP.md`), writes those outputs
+into the repository-root `.env`, and scans the output for known failure patterns from this
+workshop's setup, printing the specific fix for each one found.
 
-```bash
-bash apply.sh main.tfplan
-```
-
-(Plain `terraform apply main.tfplan` still works if you'd rather handle DNS/`.env` yourself.)
+(Plain `terraform init`/`validate`/`apply` still work individually if you'd rather run each
+step, or handle DNS/`.env` yourself.)
 
 The AzureRM provider registers the resource providers used by this template. If
 your organization restricts provider registration, have an administrator register

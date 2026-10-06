@@ -1,19 +1,25 @@
 #!/usr/bin/env bash
-# apply.sh: terraform apply wrapper for this workshop's public-endpoint infra.
+# apply.sh: runs the full terraform workflow for this workshop's
+# public-endpoint infra, start to finish, failing fast on the first error.
 #
 # What it does:
-#   1. Runs `terraform apply` (or whatever plan/args you pass), streaming output
-#      live while also capturing it for diagnosis.
-#   2. On success, reads `terraform output`, resolves every real resource
-#      hostname via DNS-over-HTTPS, and patches /etc/hosts -- the corporate-DNS
-#      workaround this session needed repeatedly, now automated.
-#   3. On failure (or success), scans the captured output for error patterns
-#      hit during this workshop's setup and prints the specific fix for each.
+#   1. terraform init -upgrade, fmt, validate, then apply -- in order,
+#      stopping immediately if any step fails. `apply` alone already computes
+#      and displays the plan, then asks for interactive "yes" confirmation
+#      before doing anything -- same review you'd get running it by hand.
+#      All output is streamed live and also captured for diagnosis.
+#   2. On a successful apply, reads `terraform output`, resolves every real
+#      resource hostname via DNS-over-HTTPS, and patches /etc/hosts -- the
+#      corporate-DNS workaround this session needed repeatedly, now automated.
+#   3. Also on a successful apply, writes the workshop_env output into the
+#      repository-root .env (auto-managed block; your other settings aren't
+#      touched).
+#   4. Whether it succeeded or failed, scans the captured output for error
+#      patterns hit during this workshop's setup and prints the specific fix
+#      for each one found.
 #
 # Usage:
-#   bash apply.sh                  # plain `terraform apply`
-#   bash apply.sh -auto-approve    # args are passed straight through to terraform apply
-#   bash apply.sh my-saved.tfplan  # apply a saved plan instead
+#   bash apply.sh
 
 set -u
 set -o pipefail
@@ -26,12 +32,40 @@ DOH_RESOLVER="https://1.1.1.1/dns-query"
 
 status() { printf '\n==> %s\n' "$1"; }
 
+# Runs one step, tee'd into the shared log. On failure, prints which step
+# failed and returns its exit code so the caller can stop the pipeline.
+run_step() {
+  local label="$1"
+  shift
+  status "$label"
+  "$@" 2>&1 | tee -a "$LOG_FILE"
+  local exit_code=${PIPESTATUS[0]}
+  if ((exit_code != 0)); then
+    printf '\n==> FAILED: %s (exit %d)\n' "$label" "$exit_code"
+  fi
+  return "$exit_code"
+}
+
 # ---------------------------------------------------------------------------
-# Step 1: run terraform apply, tee'd so we keep a copy to grep afterward.
+# Step 1: the full terraform pipeline, stopping at the first failure.
+# terraform apply alone already computes and displays the plan, then asks
+# for interactive "yes" confirmation before doing anything -- no separate
+# `terraform plan` step needed.
 # ---------------------------------------------------------------------------
-status "Running terraform apply (log: $LOG_FILE)"
-terraform apply "$@" 2>&1 | tee "$LOG_FILE"
-APPLY_EXIT=${PIPESTATUS[0]}
+STEP_EXIT=0
+
+run_step "terraform init -upgrade" terraform init -upgrade -input=false || STEP_EXIT=$?
+if ((STEP_EXIT == 0)); then
+  run_step "terraform fmt" terraform fmt || STEP_EXIT=$?
+fi
+if ((STEP_EXIT == 0)); then
+  run_step "terraform validate" terraform validate || STEP_EXIT=$?
+fi
+if ((STEP_EXIT == 0)); then
+  run_step "terraform apply" terraform apply || STEP_EXIT=$?
+fi
+
+APPLY_EXIT=$STEP_EXIT
 
 # ---------------------------------------------------------------------------
 # Step 2: on success, patch /etc/hosts for every real hostname this
