@@ -1,18 +1,19 @@
 locals {
   workload_name         = "${var.name_prefix}-${var.resource_suffix}"
   compact_workload_name = replace(local.workload_name, "-", "")
-  resource_group_name   = "rg-${local.workload_name}"
-  # Storage, Key Vault, Container Registry, Foundry, AI Search, Cosmos DB, and
-  # the managed identity all share the same random suffix for consistent
-  # naming across the deployment. For Storage/Key Vault/ACR/Foundry/Search/
-  # Cosmos DB the suffix also avoids collisions with other workshop
-  # attendees' deployments, since those names are globally unique across
-  # every Azure tenant -- and, for Key Vault specifically, with any
-  # still-lingering soft-deleted vault of your own from a previous destroy
-  # cycle (recovering an old soft-deleted vault restores its original
-  # purge-protection setting, not this config's value). The managed
-  # identity's name only needs to be unique within this resource group, so
-  # it doesn't strictly need the suffix, but gets one anyway for consistency.
+  resource_group_name   = "rg-${local.workload_name}-${random_string.unique_suffix.result}"
+  # Storage, Key Vault, Container Registry, Foundry, AI Search, Cosmos DB, the
+  # managed identity, and the resource group itself all share the same random
+  # suffix for consistent naming across the deployment. For Storage/Key
+  # Vault/ACR/Foundry/Search/Cosmos DB the suffix also avoids collisions with
+  # other workshop attendees' deployments, since those names are globally
+  # unique across every Azure tenant -- and, for Key Vault specifically, with
+  # any still-lingering soft-deleted vault of your own from a previous
+  # destroy cycle (recovering an old soft-deleted vault restores its original
+  # purge-protection setting, not this config's value). The resource group
+  # and managed identity names only need to be unique within the
+  # subscription/resource group respectively, so neither strictly needs the
+  # suffix, but both get one anyway for consistency.
   # Truncate the base name first so the result never exceeds each resource
   # type's name-length limit, regardless of name_prefix/resource_suffix length.
   identity_name           = "id-${local.workload_name}-${random_string.unique_suffix.result}"
@@ -20,9 +21,10 @@ locals {
   key_vault_name          = "kv${substr(local.compact_workload_name, 0, 16)}${random_string.unique_suffix.result}"
   container_registry_name = "cr${local.compact_workload_name}${random_string.unique_suffix.result}"
   foundry_account_name    = "ai-${local.workload_name}-${random_string.unique_suffix.result}"
-  foundry_project_name    = var.foundry_project_name
+  foundry_project_name    = "${var.foundry_project_name}-${random_string.unique_suffix.result}"
   search_service_name     = "srch-${local.workload_name}-${random_string.unique_suffix.result}"
   cosmos_db_account_name  = "cosmos-${local.workload_name}-${random_string.unique_suffix.result}"
+  capability_host_name    = "${var.capability_host_name}-${random_string.unique_suffix.result}"
 
   model_deployments = {
     for key, deployment in var.model_deployments : key => {

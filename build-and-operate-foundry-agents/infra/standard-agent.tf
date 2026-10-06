@@ -100,7 +100,7 @@ resource "time_sleep" "standard_agent_rbac" {
 
 resource "azapi_resource" "foundry_account_capability_host" {
   type                      = "Microsoft.CognitiveServices/accounts/capabilityHosts@2026-07-01"
-  name                      = var.capability_host_name
+  name                      = local.capability_host_name
   parent_id                 = module.foundry_account.resource_id
   schema_validation_enabled = false
 
@@ -115,7 +115,7 @@ resource "azapi_resource" "foundry_account_capability_host" {
 
 resource "azapi_resource" "foundry_project_capability_host" {
   type                      = "Microsoft.CognitiveServices/accounts/projects/capabilityHosts@2025-04-01-preview"
-  name                      = var.capability_host_name
+  name                      = local.capability_host_name
   parent_id                 = azurerm_cognitive_account_project.foundry.id
   schema_validation_enabled = false
 
