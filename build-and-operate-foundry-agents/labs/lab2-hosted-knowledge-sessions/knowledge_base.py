@@ -473,7 +473,7 @@ if "__file__" not in globals() and os.environ.get("RUN_LAB2_CHUNKING_GATE") == "
 
 # %% Entry point
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0] if __doc__ else None)
     parser.add_argument("--skip-connection", action="store_true", help="skip the ARM connection PUT")
     parser.add_argument("--demo-only", action="store_true", help="query existing indexes only")
     args = parser.parse_args()

@@ -614,7 +614,7 @@ if "__file__" not in globals():
 
 # %% Step S5.11 - Script-only entry point (skip in Jupyter)
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0] if __doc__ else None)
     parser.add_argument("--build-only", action="store_true")
     parser.add_argument("--demo-only", action="store_true", help="reuse artifacts/stretch5/agents.json")
     parser.add_argument("--concierge-turn", action="store_true", help="also run one function-call turn on healthcare-marketplace-concierge")

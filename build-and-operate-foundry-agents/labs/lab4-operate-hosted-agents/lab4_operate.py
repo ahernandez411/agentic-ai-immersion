@@ -669,7 +669,7 @@ if "__file__" not in globals():
 
 # %% Step 4.12 - Script-only entry point (skip in Jupyter)
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0] if __doc__ else None)
     parser.add_argument("--target", choices=["local", "deployed"], default="local")
     parser.add_argument("--limit", type=int, default=None, help="evaluate only the first N golden questions")
     parser.add_argument("--skip-judges", action="store_true", help="skip Groundedness and Relevance (no judge model calls)")

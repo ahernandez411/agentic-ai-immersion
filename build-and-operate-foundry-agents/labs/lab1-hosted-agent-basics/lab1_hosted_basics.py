@@ -415,7 +415,7 @@ def main(args: argparse.Namespace) -> None:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0] if __doc__ else None)
     parser.add_argument("--skip-demo", action="store_true", help="only vendor and write hosted.json")
     parser.add_argument("--no-vendor", action="store_true", help="do not re-copy common/ and data/ into hosted/")
     parser.add_argument("--base", default=None, help="talk to an already running server, e.g. http://localhost:8088")

@@ -831,7 +831,7 @@ def main(args: argparse.Namespace) -> None:
 
 
 if __name__ == "__main__" and "__file__" in globals():
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0] if __doc__ else None)
     parser.add_argument("--scenario", choices=["S1", "S2", "S3", "all"], default="all")
     parser.add_argument(
         "--auto-approve",

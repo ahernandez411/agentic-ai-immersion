@@ -208,7 +208,7 @@ def write_outputs(gate: dict[str, Any]) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0] if __doc__ else None)
     parser.add_argument("--run", action="store_true", help="run lab4_operate.py first")
     parser.add_argument("--target", choices=["local", "deployed"], default="local")
     parser.add_argument("--limit", type=int, default=None)
