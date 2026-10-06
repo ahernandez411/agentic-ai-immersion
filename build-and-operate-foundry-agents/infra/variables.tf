@@ -116,14 +116,14 @@ variable "foundry_project_description" {
 }
 
 variable "validation_resource_group_name" {
-  description = "Optional existing resource group name used only by post-deploy-validation.sh when it differs from this root's naming convention."
+  description = "Optional existing resource group name used only by tf-post-deploy-validation.sh when it differs from this root's naming convention."
   type        = string
   default     = null
   nullable    = true
 }
 
 variable "validation_foundry_account_name" {
-  description = "Optional existing Foundry account name used only by post-deploy-validation.sh when it differs from this root's naming convention."
+  description = "Optional existing Foundry account name used only by tf-post-deploy-validation.sh when it differs from this root's naming convention."
   type        = string
   default     = null
   nullable    = true

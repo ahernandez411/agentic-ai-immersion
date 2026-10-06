@@ -34,8 +34,12 @@
   vault; Log Analytics remains for diagnostic settings (Application Insights was removed). Outputs map
   directly to the workshop `.env`; no concrete Azure identifiers are committed except in the gitignored
   local `terraform.tfvars`.
-  `post-deploy-validation.sh` reuses Azure CLI credentials, verifies the tfvars/variable-default-selected
+  `tf-post-deploy-validation.sh` reuses Azure CLI credentials, verifies the tfvars/variable-default-selected
   Azure context and Foundry resources, and runs a mini-model Responses API smoke test.
+  `tf-apply.sh`/`tf-destroy.sh` run the full init/fmt/validate/apply (or validate/destroy) pipeline in
+  one command, sharing DNS-over-HTTPS `/etc/hosts` patching (a corporate-DNS workaround some networks
+  need for per-resource Azure hostnames), `.env` workshop_env writing/clearing, and known-failure-pattern
+  diagnosis from `tf-lib.sh`. All `infra/` scripts use a `tf-` prefix so they sort/group together.
 - Non-Docker learner path: `build-and-operate-foundry-agents/NON-DOCKER-SETUP.md` is a Docker-free
   alternative to `SETUP.md`'s dev-container path (native Python 3.14, `az`/`azd`, optional native
   Redis instead of the dev-container's Redis/Azurite sidecars), cross-linked from `SETUP.md`.
@@ -92,7 +96,7 @@ Pending structural change considered: `build-and-operate-foundry-agents/infra/`,
 README, ignored local tfvars convention, provider lock, complete Standard Agent resource graph and workshop
 environment outputs. This supersedes the registry-coupled draft and its PowerShell-only deployment checks.
 Baseline for the post-deployment validator: `15f9fdbca29b5137618ff947009cfa58d45e504f`.
-Pending structural change considered: `build-and-operate-foundry-agents/infra/post-deploy-validation.sh`
+Pending structural change considered: `build-and-operate-foundry-agents/infra/tf-post-deploy-validation.sh`
 and its README/index navigation updates.
 Pending structural change considered: `build-and-operate-foundry-agents/infra/troubleshoot-private-endpoint.sh`
 and its README/index navigation updates.

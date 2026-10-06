@@ -146,7 +146,7 @@ python build-and-operate-foundry-agents/tools/preflight.py
 
 This checks the Python version, required commands, importable packages, your resource suffix, and
 (only if your Redis URL is local) a Redis ping. Azure login, RBAC, and live service connectivity
-still require the separate checks already documented in `infra/README.md` and `infra/post-deploy-validation.sh`.
+still require the separate checks already documented in `infra/README.md` and `infra/tf-post-deploy-validation.sh`.
 
 ## 7. Run a lab
 

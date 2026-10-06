@@ -102,7 +102,7 @@ Run the whole workflow — `init -upgrade`, `fmt`, `validate`, then `apply` with
 interactive plan review and "yes" confirmation prompt — with one command:
 
 ```bash
-bash apply.sh
+bash tf-apply.sh
 ```
 
 It stops immediately if any step fails. On a successful apply, it also automatically patches
@@ -135,8 +135,8 @@ After apply, inspect the nonsecret outputs:
 terraform output
 ```
 
-If you applied with `apply.sh`, the repository-root `.env` already has these values (in an
-auto-managed block that's safe to delete — rerunning `apply.sh` regenerates it, and nothing
+If you applied with `tf-apply.sh`, the repository-root `.env` already has these values (in an
+auto-managed block that's safe to delete — rerunning `tf-apply.sh` regenerates it, and nothing
 else in `.env` is touched). Otherwise, write them in yourself:
 
 ```bash
@@ -166,7 +166,7 @@ Run the post-deployment management-plane and model smoke tests from this
 directory:
 
 ```bash
-bash post-deploy-validation.sh
+bash tf-post-deploy-validation.sh
 ```
 
 The script reads tenant, subscription, location, naming, project, and model
@@ -199,12 +199,22 @@ Microsoft Entra ID role assignments remain the access boundary.
 
 ## Destroy
 
-Review the destroy plan before removing the environment:
+Run the whole teardown — `init -upgrade`, `validate`, a DNS patch for the current
+deployment's hostnames (needed so `destroy` can refresh/read each resource before
+deleting it), then `destroy` with its normal interactive plan review and typed
+confirmation — with one command:
 
 ```bash
-terraform plan -destroy -out destroy.tfplan
-terraform apply destroy.tfplan
+bash tf-destroy.sh
 ```
+
+It stops immediately if any step fails. On a successful destroy, it also clears the
+auto-managed `workshop_env` block from the repository-root `.env` (those endpoints
+no longer exist), and scans the output for known failure patterns from this
+workshop's setup, printing the specific fix for each one found.
+
+(Plain `terraform plan -destroy` / `terraform apply` still work individually if
+you'd rather run each step yourself.)
 
 Destroy includes a short cooldown and purge action so a re-deployment can reuse
 the same Microsoft Foundry resource name immediately after the soft-deleted
