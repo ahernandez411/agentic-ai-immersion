@@ -5,10 +5,14 @@ locals {
   identity_name         = "id-${local.workload_name}"
   storage_account_name  = "st${local.compact_workload_name}"
   # Key Vault names are globally unique across every Azure tenant, so a
-  # random suffix avoids collisions with other workshop attendees' vaults.
+  # suffix avoids collisions with other workshop attendees' vaults. Derived
+  # from subscription_id (a globally unique GUID) instead of pure randomness
+  # so the name stays identical across a destroy/recreate cycle for the same
+  # subscription — useful for local DNS workarounds tied to the hostname.
   # Truncate the base name first so the result never exceeds the 24-character
   # Key Vault name limit, regardless of name_prefix/resource_suffix length.
-  key_vault_name               = "kv${substr(local.compact_workload_name, 0, 18)}${random_string.key_vault_suffix.result}"
+  key_vault_suffix             = substr(md5(var.subscription_id), 0, 4)
+  key_vault_name               = "kv${substr(local.compact_workload_name, 0, 18)}${local.key_vault_suffix}"
   container_registry_name      = "cr${local.compact_workload_name}"
   foundry_account_name         = "ai-${local.workload_name}"
   foundry_project_name         = var.foundry_project_name
