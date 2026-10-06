@@ -46,20 +46,47 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-## 3. Install the Azure CLI and azd
+## 3. Install the Azure CLI, azd, git, gh, and pwsh
 
 ```bash
+# Azure CLI
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash   # Debian/Ubuntu; see learn.microsoft.com for other OSes
+
+# azd (Azure Developer CLI)
 curl -fsSL https://aka.ms/install-azd.sh | bash
 azd version   # must be 1.34.2 or newer
+
+# git
+sudo apt-get update && sudo apt-get install -y git   # Debian/Ubuntu; macOS: brew install git or Xcode CLT
+
+# GitHub CLI (gh)
+(type -p wget >/dev/null || sudo apt-get install -y wget) \
+  && sudo mkdir -p -m 755 /etc/apt/keyrings \
+  && wget -nv -O- https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+     | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null \
+  && sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
+  && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+     | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+  && sudo apt-get update && sudo apt-get install -y gh   # Debian/Ubuntu; macOS: brew install gh
+
+# PowerShell 7 (pwsh) — used only by the shared permission-setup script
+wget -q "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb" \
+  && sudo dpkg -i packages-microsoft-prod.deb \
+  && sudo apt-get update && sudo apt-get install -y powershell   # Debian/Ubuntu; macOS: brew install --cask powershell
+```
+
+See [learn.microsoft.com](https://learn.microsoft.com/cli/azure/install-azure-cli), [learn.microsoft.com/azure/developer/azure-developer-cli/install-azd](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd),
+[cli.github.com](https://cli.github.com), and [learn.microsoft.com/powershell](https://learn.microsoft.com/powershell/scripting/install/installing-powershell)
+for Windows, other Linux distros, and non-apt options.
+
+Then sign in and configure Foundry tooling:
+
+```bash
 az login --use-device-code --tenant '<tenant-id>'
 az account set --subscription '<subscription-id>'
 azd config set auth.useAzCliAuth true
 azd extension install azure.ai.agents
 ```
-
-`git`, `gh`, and `pwsh` are common pre-installed tools on most dev machines; install them from
-their own official sources if missing.
 
 ## 4. Decide what to do about Redis
 
@@ -133,3 +160,34 @@ interpreter — no container required — to run it cell by cell.
   files on Windows outside WSL, make sure your editor doesn't reintroduce CRLF.
 - Nothing here changes RBAC, networking, or cleanup guidance in `SETUP.md` — those sections still
   apply regardless of how you run the Python side locally.
+
+## Troubleshooting: corporate DNS blocking Azure/Microsoft hostnames
+
+On some corporate networks, the local DNS resolver fails to resolve specific Microsoft/Azure
+hostnames (for example `login.microsoftonline.com`, `*.vault.azure.net`, `*.openai.azure.com`,
+other per-resource `*.azure.com` names, or `azuresdkartifacts.z5.web.core.windows.net`, used by the
+`azd` installer) even though the network path to Azure is otherwise open and unrelated domains
+resolve fine. Symptoms: `curl: (6) Could not resolve host: ...`, or Python/az errors mentioning
+`NameResolutionError` / `Failed to resolve`.
+
+This is a DNS-only gap, not a firewall block, and the dev container doesn't avoid it either — it's
+a property of the network, not of Docker. To confirm and work around it for one hostname:
+
+```bash
+HOST=<the-hostname-from-the-error>
+
+# 1. Confirm local DNS fails but the host is real and reachable
+getent hosts "$HOST" || echo "local DNS fails"
+curl -s -H 'accept: application/dns-json' "https://1.1.1.1/dns-query?name=$HOST&type=A"
+
+# 2. Pin it to the resolved IP (adjust the IP from step 1's output)
+echo "<resolved-ip> $HOST" | sudo tee -a /etc/hosts
+
+# 3. Confirm it resolves and is reachable now
+getent hosts "$HOST"
+curl -sI "https://$HOST/" | head -1
+```
+
+This is a session-only workaround: WSL regenerates `/etc/hosts` on restart (see the comment at the
+top of that file), so you may need to reapply it. The durable fix is for your network/IT team to
+correct DNS resolution for `*.microsoftonline.com`, `*.azure.com`, and related Microsoft domains.
