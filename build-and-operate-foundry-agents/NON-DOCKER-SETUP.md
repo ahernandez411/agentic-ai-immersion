@@ -90,13 +90,21 @@ azd extension install azure.ai.agents
 
 ## 4. Decide what to do about Redis
 
-If you only plan to run Labs 1-3 or Stretch 6, you can skip Redis entirely: leave
-`MARKETPLACE_REDIS_URL` unset in `.env`. `tools/preflight.py` only pings Redis when the URL
-resolves to a local host (`redis`, `localhost`, `127.0.0.1`), and the labs you're running don't
-read that variable.
+If you don't want Redis at all, you still need to set `MARKETPLACE_REDIS_URL` explicitly — leaving
+it **unset** doesn't skip `tools/preflight.py`'s check, because `common/foundry_env.py` defaults an
+unset value to `redis://redis:6379/0`, which still looks local and still triggers a ping. Point it
+at any non-local-looking value instead:
 
-If you want `tools/preflight.py` to pass its Redis check (or you plan to use a generic
-Redis-backed store or the Lab 4 infra template), install Redis natively instead of via Docker:
+```bash
+echo 'MARKETPLACE_REDIS_URL=redis://unused.invalid:6379/0' >> .env
+```
+
+`tools/preflight.py` only pings Redis when the URL resolves to a local host (`redis`, `localhost`,
+`127.0.0.1`), so this skips the check entirely. Labs 1-3 and Stretch 6 don't read this variable at
+runtime either way.
+
+If you actually want a working Redis (for a generic Redis-backed store or the Lab 4 infra
+template), install it natively instead of via Docker:
 
 ```bash
 sudo apt-get install -y redis-server   # Debian/Ubuntu
