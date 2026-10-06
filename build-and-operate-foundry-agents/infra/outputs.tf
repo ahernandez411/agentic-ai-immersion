@@ -34,23 +34,13 @@ output "location" {
   value       = module.resource_group.location
 }
 
-output "vnet_id" {
-  description = "Resource ID of the workshop virtual network."
-  value       = module.spoke_vnet.resource_id
-}
-
-output "subnet_ids" {
-  description = "Resource IDs of the agent and private-endpoint subnets."
-  value       = { for key, subnet in module.spoke_vnet.subnets : key => subnet.resource_id }
-}
-
 output "foundry_account_id" {
   description = "Resource ID of the Microsoft Foundry resource."
   value       = module.foundry_account.resource_id
 }
 
 output "foundry_account_endpoint" {
-  description = "Microsoft Foundry resource data-plane endpoint; private network access is required."
+  description = "Microsoft Foundry resource data-plane endpoint."
   value       = module.foundry_account.endpoint
 }
 
@@ -60,7 +50,7 @@ output "foundry_project_id" {
 }
 
 output "foundry_project_endpoint" {
-  description = "Microsoft Foundry project endpoint for FOUNDRY_PROJECT_ENDPOINT; private network access is required."
+  description = "Microsoft Foundry project endpoint for FOUNDRY_PROJECT_ENDPOINT."
   value       = local.foundry_project_endpoint
 }
 
@@ -95,7 +85,7 @@ output "search_service_id" {
 }
 
 output "search_endpoint" {
-  description = "Azure AI Search endpoint for AZURE_AI_SEARCH_ENDPOINT; private network access is required."
+  description = "Azure AI Search endpoint for AZURE_AI_SEARCH_ENDPOINT."
   value       = local.search_endpoint
 }
 
@@ -153,11 +143,6 @@ output "application_insights_connection_string" {
 output "log_analytics_workspace_id" {
   description = "Resource ID of the Log Analytics workspace."
   value       = azurerm_log_analytics_workspace.foundry.id
-}
-
-output "monitor_private_link_scope_id" {
-  description = "Resource ID of the Azure Monitor Private Link Scope."
-  value       = azurerm_monitor_private_link_scope.foundry.id
 }
 
 output "workshop_environment" {

@@ -5,11 +5,12 @@ module "container_registry" {
   name                          = local.container_registry_name
   location                      = module.resource_group.location
   resource_group_name           = module.resource_group.name
-  sku                           = "Premium"
+  sku                           = "Standard"
   admin_enabled                 = false
   anonymous_pull_enabled        = false
-  export_policy_enabled         = false
-  public_network_access_enabled = false
+  export_policy_enabled         = true
+  public_network_access_enabled = true
+  zone_redundancy_enabled       = false
   enable_telemetry              = false
   tags                          = local.tags
 
@@ -22,36 +23,10 @@ module "container_registry" {
     }
   }
 
-  private_endpoints = {
-    registry = {
-      name               = "${local.workload_name}-acr-pe"
-      subnet_resource_id = module.spoke_vnet.subnets["private_endpoints"].resource_id
-      private_dns_zone_resource_ids = [
-        azurerm_private_dns_zone.foundry["privatelink.azurecr.io"].id,
-        azurerm_private_dns_zone.foundry["${var.location}.data.privatelink.azurecr.io"].id,
-      ]
-    }
-  }
-
   diagnostic_settings = {
     hub = {
       name                  = "${local.workload_name}-acr-diag"
       workspace_resource_id = azurerm_log_analytics_workspace.foundry.id
     }
   }
-}
-
-resource "azurerm_private_dns_a_record" "container_registry_data" {
-  name                = local.container_registry_name
-  zone_name           = azurerm_private_dns_zone.foundry["${var.location}.data.privatelink.azurecr.io"].name
-  resource_group_name = module.resource_group.name
-  ttl                 = 10
-  records = flatten([
-    for zone in module.container_registry.private_endpoints["registry"].private_dns_zone_configs : [
-      for record in zone.record_sets :
-      record.ip_addresses
-      if record.fqdn == "${local.container_registry_name}.${var.location}.data.privatelink.azurecr.io"
-    ]
-  ])
-  tags = local.tags
 }

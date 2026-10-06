@@ -11,8 +11,8 @@ module "foundry_account" {
   custom_subdomain_name              = local.foundry_account_name
   deployment_serialization_enabled   = true
   local_auth_enabled                 = false
-  outbound_network_access_restricted = true
-  public_network_access_enabled      = false
+  outbound_network_access_restricted = false
+  public_network_access_enabled      = true
   enable_telemetry                   = false
   tags                               = local.tags
 
@@ -21,36 +21,12 @@ module "foundry_account" {
     user_assigned_resource_ids = [module.foundry_identity.resource_id]
   }
 
-  network_acls = {
-    bypass         = "AzureServices"
-    default_action = "Deny"
-  }
-
   storage = [{
     storage_account_id = module.storage.resource_id
     identity_client_id = module.foundry_identity.client_id
   }]
 
   cognitive_deployments = local.model_deployments
-
-  network_injections = {
-    subnet_id                         = module.spoke_vnet.subnets["agents"].resource_id
-    scenario                          = "agent"
-    microsoft_managed_network_enabled = false
-  }
-
-  private_endpoints_manage_dns_zone_group = false
-  private_endpoints = {
-    account = {
-      name               = "${local.workload_name}-account-pe"
-      subnet_resource_id = module.spoke_vnet.subnets["private_endpoints"].resource_id
-      private_dns_zone_resource_ids = [
-        azurerm_private_dns_zone.foundry["privatelink.cognitiveservices.azure.com"].id,
-        azurerm_private_dns_zone.foundry["privatelink.openai.azure.com"].id,
-        azurerm_private_dns_zone.foundry["privatelink.services.ai.azure.com"].id,
-      ]
-    }
-  }
 
   diagnostic_settings = {
     hub = {
@@ -78,39 +54,7 @@ resource "azapi_resource_action" "purge_foundry_account" {
 }
 
 resource "time_sleep" "foundry_purge_cooldown" {
-  destroy_duration = "900s"
-
-  depends_on = [module.spoke_vnet]
-}
-
-resource "azapi_resource" "foundry_account_dns_zone_group" {
-  type      = "Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2024-05-01"
-  name      = "default"
-  parent_id = module.foundry_account.private_endpoints["account"].id
-  body = {
-    properties = {
-      privateDnsZoneConfigs = [
-        {
-          name = "cognitive-services"
-          properties = {
-            privateDnsZoneId = azurerm_private_dns_zone.foundry["privatelink.cognitiveservices.azure.com"].id
-          }
-        },
-        {
-          name = "openai"
-          properties = {
-            privateDnsZoneId = azurerm_private_dns_zone.foundry["privatelink.openai.azure.com"].id
-          }
-        },
-        {
-          name = "foundry-services"
-          properties = {
-            privateDnsZoneId = azurerm_private_dns_zone.foundry["privatelink.services.ai.azure.com"].id
-          }
-        },
-      ]
-    }
-  }
+  destroy_duration = "60s"
 }
 
 resource "azurerm_cognitive_account_project" "foundry" {

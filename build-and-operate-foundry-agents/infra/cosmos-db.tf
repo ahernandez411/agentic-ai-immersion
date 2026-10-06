@@ -9,7 +9,7 @@ resource "azurerm_cosmosdb_account" "foundry" {
   free_tier_enabled                = var.cosmos_free_tier_enabled
   local_authentication_enabled     = false
   multiple_write_locations_enabled = false
-  public_network_access_enabled    = false
+  public_network_access_enabled    = true
   tags                             = local.tags
 
   consistency_policy {
@@ -19,27 +19,7 @@ resource "azurerm_cosmosdb_account" "foundry" {
   geo_location {
     location          = module.resource_group.location
     failover_priority = 0
-    zone_redundant    = var.cosmos_zone_redundant
-  }
-}
-
-resource "azurerm_private_endpoint" "cosmos_db" {
-  name                = "${local.workload_name}-cosmos-pe"
-  location            = module.resource_group.location
-  resource_group_name = module.resource_group.name
-  subnet_id           = module.spoke_vnet.subnets["private_endpoints"].resource_id
-  tags                = local.tags
-
-  private_service_connection {
-    name                           = "${local.workload_name}-cosmos-psc"
-    is_manual_connection           = false
-    private_connection_resource_id = azurerm_cosmosdb_account.foundry.id
-    subresource_names              = ["Sql"]
-  }
-
-  private_dns_zone_group {
-    name                 = "cosmos-db"
-    private_dns_zone_ids = [azurerm_private_dns_zone.foundry["privatelink.documents.azure.com"].id]
+    zone_redundant    = false
   }
 }
 

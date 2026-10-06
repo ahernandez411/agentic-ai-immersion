@@ -23,7 +23,6 @@ provider "azurerm" {
   tenant_id                       = var.tenant_id
   resource_provider_registrations = "none"
   resource_providers_to_register = [
-    "Microsoft.App",
     "Microsoft.Authorization",
     "Microsoft.CognitiveServices",
     "Microsoft.ContainerService",
@@ -32,7 +31,6 @@ provider "azurerm" {
     "Microsoft.Insights",
     "Microsoft.KeyVault",
     "Microsoft.ManagedIdentity",
-    "Microsoft.Network",
     "Microsoft.OperationalInsights",
     "Microsoft.Search",
     "Microsoft.Storage",

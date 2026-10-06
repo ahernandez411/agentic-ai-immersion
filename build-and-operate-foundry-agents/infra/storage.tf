@@ -8,7 +8,7 @@ module "storage" {
   account_sku_name                = var.storage_account_sku
   allow_nested_items_to_be_public = false
   default_to_oauth_authentication = true
-  public_network_access_enabled   = false
+  public_network_access_enabled   = true
   shared_access_key_enabled       = false
   enable_telemetry                = false
   tags                            = local.tags
@@ -36,15 +36,6 @@ module "storage" {
       role_definition_id_or_name = "Storage Blob Data Contributor"
       principal_id               = var.operator_principal_id
       principal_type             = var.operator_principal_type
-    }
-  }
-
-  private_endpoints = {
-    blob = {
-      name                          = "${local.workload_name}-blob-pe"
-      subnet_resource_id            = module.spoke_vnet.subnets["private_endpoints"].resource_id
-      subresource_name              = "blob"
-      private_dns_zone_resource_ids = [azurerm_private_dns_zone.foundry["privatelink.blob.core.windows.net"].id]
     }
   }
 

@@ -21,6 +21,7 @@ variable "tenant_id" {
 variable "location" {
   description = "Azure region for every regional resource."
   type        = string
+  default     = "centralus"
 
   validation {
     condition     = can(regex("^[a-z0-9]+$", var.location))
@@ -31,6 +32,7 @@ variable "location" {
 variable "name_prefix" {
   description = "Lowercase prefix used in generated resource names."
   type        = string
+  default     = "marketplace"
 
   validation {
     condition     = can(regex("^[a-z][a-z0-9-]{1,10}[a-z0-9]$", var.name_prefix))
@@ -41,6 +43,7 @@ variable "name_prefix" {
 variable "resource_suffix" {
   description = "Short lowercase suffix that makes globally scoped resource names unique."
   type        = string
+  default     = "abc123"
 
   validation {
     condition     = can(regex("^[a-z0-9]{3,6}$", var.resource_suffix))
@@ -62,7 +65,10 @@ variable "environment" {
 variable "tags" {
   description = "Additional tags merged with the standard deployment tags."
   type        = map(string)
-  default     = {}
+  default = {
+    owner       = "workshop-team"
+    cost-center = "training"
+  }
 }
 
 variable "operator_principal_id" {
@@ -106,7 +112,7 @@ variable "foundry_project_display_name" {
 variable "foundry_project_description" {
   description = "Description shown for the Microsoft Foundry project."
   type        = string
-  default     = "Private Microsoft Foundry project for the Build and Operate Foundry Agents workshop."
+  default     = "Microsoft Foundry project for the Build and Operate Foundry Agents workshop."
 }
 
 variable "validation_resource_group_name" {
@@ -123,50 +129,14 @@ variable "validation_foundry_account_name" {
   nullable    = true
 }
 
-variable "virtual_network_address_space" {
-  description = "RFC 1918 address space for the workshop virtual network."
-  type        = string
-  default     = "192.168.0.0/16"
-
-  validation {
-    condition     = can(cidrnetmask(var.virtual_network_address_space))
-    error_message = "virtual_network_address_space must be valid IPv4 CIDR notation."
-  }
-}
-
-variable "agent_subnet_address_prefix" {
-  description = "Address prefix for the subnet delegated to Microsoft.App/environments. Use /24 for hosted-agent headroom; /27 is the supported minimum."
-  type        = string
-  default     = "192.168.0.0/24"
-
-  validation {
-    condition = (
-      can(cidrnetmask(var.agent_subnet_address_prefix)) &&
-      try(tonumber(split("/", var.agent_subnet_address_prefix)[1]) <= 27, false)
-    )
-    error_message = "agent_subnet_address_prefix must be valid IPv4 CIDR notation with a /27 or larger subnet."
-  }
-}
-
-variable "private_endpoint_subnet_address_prefix" {
-  description = "Address prefix for private endpoints."
-  type        = string
-  default     = "192.168.1.0/24"
-
-  validation {
-    condition     = can(cidrnetmask(var.private_endpoint_subnet_address_prefix))
-    error_message = "private_endpoint_subnet_address_prefix must be valid IPv4 CIDR notation."
-  }
-}
-
 variable "storage_account_sku" {
-  description = "Replication SKU for the Azure Storage account."
+  description = "Replication SKU for the Azure Storage account. Zone-redundant SKUs are not offered; this deployment is single-zone for simplicity."
   type        = string
   default     = "Standard_LRS"
 
   validation {
-    condition     = contains(["Standard_LRS", "Standard_ZRS", "Standard_GRS", "Standard_GZRS"], var.storage_account_sku)
-    error_message = "storage_account_sku must be Standard_LRS, Standard_ZRS, Standard_GRS, or Standard_GZRS."
+    condition     = contains(["Standard_LRS", "Standard_GRS"], var.storage_account_sku)
+    error_message = "storage_account_sku must be Standard_LRS or Standard_GRS."
   }
 }
 
@@ -182,7 +152,7 @@ variable "marketplace_blob_container_name" {
 }
 
 variable "search_sku" {
-  description = "Azure AI Search pricing tier. Private endpoints require Basic or higher."
+  description = "Azure AI Search pricing tier."
   type        = string
   default     = "basic"
 
@@ -231,12 +201,6 @@ variable "cosmos_free_tier_enabled" {
   default     = false
 }
 
-variable "cosmos_zone_redundant" {
-  description = "Whether the Azure Cosmos DB regional replica uses availability zones."
-  type        = bool
-  default     = false
-}
-
 variable "application_insights_retention_in_days" {
   description = "Application Insights retention period."
   type        = number
@@ -270,6 +234,40 @@ variable "model_deployments" {
     capacity               = number
     version_upgrade_option = optional(string, "NoAutoUpgrade")
   }))
+  default = {
+    gpt_5_6_sol = {
+      deployment_name = "gpt-5.6-sol"
+      model_name      = "gpt-5.6-sol"
+      model_version   = "2026-07-09"
+      model_format    = "OpenAI"
+      sku_name        = "GlobalStandard"
+      capacity        = 1
+    }
+    gpt_5_4_mini = {
+      deployment_name = "gpt-5.4-mini"
+      model_name      = "gpt-5.4-mini"
+      model_version   = "2026-03-17"
+      model_format    = "OpenAI"
+      sku_name        = "GlobalStandard"
+      capacity        = 1
+    }
+    gpt_5_4_nano = {
+      deployment_name = "gpt-5.4-nano"
+      model_name      = "gpt-5.4-nano"
+      model_version   = "2026-03-17"
+      model_format    = "OpenAI"
+      sku_name        = "GlobalStandard"
+      capacity        = 1
+    }
+    text_embedding_3_large = {
+      deployment_name = "text-embedding-3-large"
+      model_name      = "text-embedding-3-large"
+      model_version   = "1"
+      model_format    = "OpenAI"
+      sku_name        = "GlobalStandard"
+      capacity        = 1
+    }
+  }
 
   validation {
     condition     = length(var.model_deployments) > 0

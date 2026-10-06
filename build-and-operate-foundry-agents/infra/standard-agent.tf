@@ -114,9 +114,6 @@ resource "azapi_resource" "foundry_project_capability_host" {
   }
 
   depends_on = [
-    azurerm_private_endpoint.cosmos_db,
-    azurerm_private_endpoint.search,
-    azapi_resource.foundry_account_dns_zone_group,
     time_sleep.standard_agent_rbac,
   ]
 }

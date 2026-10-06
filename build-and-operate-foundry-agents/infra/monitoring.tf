@@ -4,24 +4,9 @@ resource "azurerm_log_analytics_workspace" "foundry" {
   resource_group_name        = module.resource_group.name
   sku                        = "PerGB2018"
   retention_in_days          = var.application_insights_retention_in_days
-  internet_ingestion_enabled = false
+  internet_ingestion_enabled = true
   internet_query_enabled     = true
   tags                       = local.tags
-}
-
-resource "azurerm_monitor_private_link_scope" "foundry" {
-  name                  = local.monitor_private_link_scope_name
-  resource_group_name   = module.resource_group.name
-  ingestion_access_mode = "PrivateOnly"
-  query_access_mode     = "Open"
-  tags                  = local.tags
-}
-
-resource "azurerm_monitor_private_link_scoped_service" "hub_workspace" {
-  name                = "${local.workload_name}-workspace"
-  resource_group_name = module.resource_group.name
-  scope_name          = azurerm_monitor_private_link_scope.foundry.name
-  linked_resource_id  = azurerm_log_analytics_workspace.foundry.id
 }
 
 module "application_insights" {
@@ -35,17 +20,10 @@ module "application_insights" {
   application_type           = "web"
   retention_in_days          = var.application_insights_retention_in_days
   daily_data_cap_in_gb       = var.application_insights_daily_data_cap_in_gb
-  internet_ingestion_enabled = false
+  internet_ingestion_enabled = true
   internet_query_enabled     = true
   enable_telemetry           = false
   tags                       = local.tags
-
-  monitor_private_link_scope = {
-    foundry = {
-      resource_id = azurerm_monitor_private_link_scope.foundry.id
-      name        = local.application_insights_name
-    }
-  }
 
   role_assignments = {
     log_analytics_reader = {
@@ -84,36 +62,6 @@ module "application_insights" {
       workspace_resource_id = azurerm_log_analytics_workspace.foundry.id
     }
   }
-}
-
-resource "azurerm_private_endpoint" "azure_monitor" {
-  name                = "${local.monitor_private_link_scope_name}-pe"
-  location            = module.resource_group.location
-  resource_group_name = module.resource_group.name
-  subnet_id           = module.spoke_vnet.subnets["private_endpoints"].resource_id
-  tags                = local.tags
-
-  private_service_connection {
-    name                           = "${local.monitor_private_link_scope_name}-psc"
-    is_manual_connection           = false
-    private_connection_resource_id = azurerm_monitor_private_link_scope.foundry.id
-    subresource_names              = ["azuremonitor"]
-  }
-
-  private_dns_zone_group {
-    name = "azure-monitor"
-    private_dns_zone_ids = [
-      azurerm_private_dns_zone.foundry["privatelink.agentsvc.azure-automation.net"].id,
-      azurerm_private_dns_zone.foundry["privatelink.monitor.azure.com"].id,
-      azurerm_private_dns_zone.foundry["privatelink.ods.opinsights.azure.com"].id,
-      azurerm_private_dns_zone.foundry["privatelink.oms.opinsights.azure.com"].id,
-    ]
-  }
-
-  depends_on = [
-    azurerm_monitor_private_link_scoped_service.hub_workspace,
-    module.application_insights,
-  ]
 }
 
 resource "azapi_resource" "foundry_account_application_insights_connection" {

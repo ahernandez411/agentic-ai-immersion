@@ -6,32 +6,12 @@ resource "azurerm_search_service" "foundry" {
   replica_count                 = var.search_replica_count
   partition_count               = var.search_partition_count
   local_authentication_enabled  = false
-  public_network_access_enabled = false
+  public_network_access_enabled = true
   semantic_search_sku           = var.search_semantic_search_sku
   tags                          = local.tags
 
   identity {
     type = "SystemAssigned"
-  }
-}
-
-resource "azurerm_private_endpoint" "search" {
-  name                = "${local.workload_name}-search-pe"
-  location            = module.resource_group.location
-  resource_group_name = module.resource_group.name
-  subnet_id           = module.spoke_vnet.subnets["private_endpoints"].resource_id
-  tags                = local.tags
-
-  private_service_connection {
-    name                           = "${local.workload_name}-search-psc"
-    is_manual_connection           = false
-    private_connection_resource_id = azurerm_search_service.foundry.id
-    subresource_names              = ["searchService"]
-  }
-
-  private_dns_zone_group {
-    name                 = "search"
-    private_dns_zone_ids = [azurerm_private_dns_zone.foundry["privatelink.search.windows.net"].id]
   }
 }
 

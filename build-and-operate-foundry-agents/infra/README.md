@@ -1,16 +1,16 @@
 # Deploy the Build and Operate workshop infrastructure
 
-This Terraform configuration deploys a self-contained, private Microsoft Foundry
-Standard Agent environment for the Build and Operate Foundry Agents workshop.
-It uses Microsoft Entra ID and a user-assigned managed identity; local keys and
-public data-plane access are disabled.
+This Terraform configuration deploys a self-contained Microsoft Foundry Standard
+Agent environment for the Build and Operate Foundry Agents workshop with public
+network access. It uses Microsoft Entra ID and a user-assigned managed identity;
+local keys are disabled, but every data-plane endpoint is reachable over the
+public internet, so a client can run the workshop without a VPN, ExpressRoute,
+or Bastion host.
 
 ## Resources
 
 - Azure resource group
 - Microsoft Foundry resource, project, capability host, and model deployments
-- Azure Virtual Network with delegated agent and private endpoint subnets
-- Azure Private Link private endpoints and Azure Private DNS zones
 - Azure Managed Identities user-assigned managed identity
 - Azure Storage account and Blob containers
 - Azure Cosmos DB for NoSQL account
@@ -19,7 +19,6 @@ public data-plane access are disabled.
 - Azure Container Registry
 - Azure Monitor Log Analytics workspace
 - Azure Monitor Application Insights
-- Azure Monitor Private Link Scope
 - Azure role assignments and Microsoft Foundry project connections
 
 ## Prerequisites
@@ -38,16 +37,15 @@ public data-plane access are disabled.
    subscription or resource-group scope is sufficient.
 4. Choose a region that supports Microsoft Foundry Agent Service, the requested
    model versions, Azure AI Search semantic ranker, and your required quota.
-5. Plan secure client access to the virtual network. Terraform can run from any
-   authenticated machine because it uses the management plane, but the workshop
-   data-plane endpoints are private. Use a peered network with VPN or ExpressRoute,
-   or a VM accessed through Azure Bastion. This template intentionally does not
-   create a public endpoint, VPN gateway, Bastion host, or virtual machine.
+5. Because every data-plane endpoint is public, treat your Microsoft Entra
+   credentials as the only access boundary. Local authentication keys stay
+   disabled on every resource; only Microsoft Entra-authorized identities can
+   read or write data.
 
 Microsoft documents the resource model in
 [Microsoft Foundry architecture](https://learn.microsoft.com/azure/foundry/concepts/architecture),
-the network requirements in
-[Set up private networking for Foundry Agent Service](https://learn.microsoft.com/azure/foundry/agents/how-to/virtual-networks),
+the Standard Agent setup in
+[Set up standard agent resources for Foundry Agent Service](https://learn.microsoft.com/azure/foundry/agents/concepts/standard-agent-setup),
 and the Terraform control-plane workflow in
 [Use Terraform to create Microsoft Foundry](https://learn.microsoft.com/azure/foundry/how-to/create-resource-terraform).
 
@@ -66,7 +64,6 @@ Edit every placeholder in `terraform.tfvars`. At minimum, set:
 - `location`
 - `operator_principal_id` and `operator_principal_type`
 - `name_prefix` and globally unique `resource_suffix`
-- nonoverlapping RFC 1918 virtual network and subnet CIDRs
 - model names, versions, SKUs, and capacities available in the selected region
 
 For an interactive user, get the operator object ID with:
@@ -114,10 +111,10 @@ terraform apply main.tfplan
 
 The AzureRM provider registers the resource providers used by this template. If
 your organization restricts provider registration, have an administrator register
-`Microsoft.App`, `Microsoft.Authorization`, `Microsoft.CognitiveServices`,
+`Microsoft.Authorization`, `Microsoft.CognitiveServices`,
 `Microsoft.ContainerRegistry`, `Microsoft.ContainerService`,
 `Microsoft.DocumentDB`, `Microsoft.Insights`, `Microsoft.KeyVault`,
-`Microsoft.ManagedIdentity`, `Microsoft.Network`,
+`Microsoft.ManagedIdentity`,
 `Microsoft.OperationalInsights`, `Microsoft.Search`, and `Microsoft.Storage`
 before deployment.
 
@@ -155,8 +152,7 @@ string; do not commit or share it. The output includes:
 - `MARKETPLACE_BLOB_STORAGE_CONTAINER`
 - Azure tenant, subscription, resource group, project, and workshop suffix values
 
-Run the workshop preflight from the repository root after connecting to the
-virtual network:
+Run the workshop preflight from the repository root:
 
 ```bash
 python build-and-operate-foundry-agents/tools/preflight.py
@@ -172,25 +168,7 @@ bash post-deploy-validation.sh
 The script reads tenant, subscription, location, naming, project, and model
 values from `terraform.tfvars`. It reuses an existing Azure CLI session when
 possible, selects the configured subscription, and starts device-code login only
-when usable cached credentials are unavailable. Because the Foundry data plane
-is private, the final mini-model inference check requires the configured private
-DNS and network path.
-
-For a full private-endpoint investigation, run:
-
-```bash
-./troubleshoot-private-endpoint.sh
-```
-
-The troubleshooting script reads the target tenant, subscription, region, and
-resource names from `terraform.tfvars`; it reuses cached Azure CLI credentials
-and starts device-code login only when needed. It continues through read
-permission failures and checks the deployed resource inventory, Foundry and
-operator RBAC, VNet and subnet configuration, NSGs, private endpoint approval
-and NIC addresses, private DNS zones and VNet links, service public-access
-settings, local hostname resolution, managed-identity roles, and recent failed
-Azure operations. Its final table reports every executed resource check as
-`PASS` or `FAIL` and identifies the most likely fault domain.
+when usable cached credentials are unavailable.
 
 Hosted agents receive a platform-assigned identity that is separate from the
 project identity. After each first hosted-agent deployment, grant that identity
@@ -208,17 +186,12 @@ az resource list \
   --resource-group "$RESOURCE_GROUP" \
   --query "[].{name:name,type:type,state:properties.provisioningState}" \
   --output table
-
-az network private-endpoint list \
-  --resource-group "$RESOURCE_GROUP" \
-  --query "[].{name:name,status:privateLinkServiceConnections[0].privateLinkServiceConnectionState.status}" \
-  --output table
 ```
 
-Every provisioning state should be `Succeeded`, and every private endpoint
-connection should be `Approved`. From a machine connected to the virtual network,
-verify that the Foundry, Azure AI Search, Blob Storage, Azure Cosmos DB, Key Vault,
-and Azure Container Registry host names resolve to private IP addresses.
+Every provisioning state should be `Succeeded`. Because every data-plane
+endpoint is public, Foundry, Azure AI Search, Blob Storage, Azure Cosmos DB, Key
+Vault, and Azure Container Registry host names resolve to public IP addresses;
+Microsoft Entra ID role assignments remain the access boundary.
 
 ## Destroy
 
@@ -229,7 +202,6 @@ terraform plan -destroy -out destroy.tfplan
 terraform apply destroy.tfplan
 ```
 
-Destroy includes a 15-minute cooldown and purge action so Microsoft Foundry can
-remove the `legionservicelink` association from the delegated agent subnet. If a
-failed deployment leaves that association in place, wait for cleanup before
-reusing the subnet; otherwise deploy with a new virtual network or subnet.
+Destroy includes a short cooldown and purge action so a re-deployment can reuse
+the same Microsoft Foundry resource name immediately after the soft-deleted
+account is removed.
