@@ -3,21 +3,22 @@ locals {
   compact_workload_name = replace(local.workload_name, "-", "")
   resource_group_name   = "rg-${local.workload_name}"
   identity_name         = "id-${local.workload_name}"
-  storage_account_name  = "st${local.compact_workload_name}"
-  # Key Vault names are globally unique across every Azure tenant, so a
-  # suffix avoids collisions with other workshop attendees' vaults. Derived
-  # from subscription_id (a globally unique GUID) instead of pure randomness
-  # so the name stays identical across a destroy/recreate cycle for the same
-  # subscription — useful for local DNS workarounds tied to the hostname.
-  # Truncate the base name first so the result never exceeds the 24-character
-  # Key Vault name limit, regardless of name_prefix/resource_suffix length.
-  key_vault_suffix             = substr(md5(var.subscription_id), 0, 4)
-  key_vault_name               = "kv${substr(local.compact_workload_name, 0, 18)}${local.key_vault_suffix}"
-  container_registry_name      = "cr${local.compact_workload_name}"
-  foundry_account_name         = "ai-${local.workload_name}"
+  # Storage, Key Vault, Container Registry, Foundry, AI Search, and Cosmos DB
+  # names are all globally unique across every Azure tenant (not just this
+  # subscription), so each gets the same random suffix to avoid colliding
+  # with another workshop attendee's deployment -- and, for Key Vault
+  # specifically, with any still-lingering soft-deleted vault of your own
+  # from a previous destroy cycle (recovering an old soft-deleted vault
+  # restores its original purge-protection setting, not this config's value).
+  # Truncate the base name first so the result never exceeds each resource
+  # type's name-length limit, regardless of name_prefix/resource_suffix length.
+  storage_account_name         = "st${substr(local.compact_workload_name, 0, 16)}${random_string.unique_suffix.result}"
+  key_vault_name               = "kv${substr(local.compact_workload_name, 0, 16)}${random_string.unique_suffix.result}"
+  container_registry_name      = "cr${local.compact_workload_name}${random_string.unique_suffix.result}"
+  foundry_account_name         = "ai-${local.workload_name}-${random_string.unique_suffix.result}"
   foundry_project_name         = var.foundry_project_name
-  search_service_name          = "srch-${local.workload_name}"
-  cosmos_db_account_name       = "cosmos-${local.workload_name}"
+  search_service_name          = "srch-${local.workload_name}-${random_string.unique_suffix.result}"
+  cosmos_db_account_name       = "cosmos-${local.workload_name}-${random_string.unique_suffix.result}"
   log_analytics_workspace_name = "log-${local.workload_name}"
 
   model_deployments = {
@@ -64,4 +65,10 @@ module "resource_group" {
   location         = var.location
   enable_telemetry = false
   tags             = local.tags
+}
+
+resource "random_string" "unique_suffix" {
+  length  = 6
+  special = false
+  upper   = false
 }
