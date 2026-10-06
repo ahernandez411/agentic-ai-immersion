@@ -34,9 +34,6 @@ search_replica_count            = 1
 search_partition_count          = 1
 cosmos_free_tier_enabled        = false
 
-# Monitoring
-log_analytics_retention_in_days = 30
-
 # Confirm every model, version, SKU, and capacity in the selected region before
 # applying. The map keys are Terraform identifiers; deployment_name is what the
 # workshop uses at runtime.

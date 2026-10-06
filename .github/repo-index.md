@@ -31,9 +31,11 @@
   and `operator_principal_id`. Terraform owns identity, Storage, Cosmos DB, AI Search, Foundry
   account/project/capability hosts (both account- and project-level; the account-level
   `capabilityHosts` resource is required by the live API even though it's undocumented), registry and
-  vault; Log Analytics remains for diagnostic settings (Application Insights was removed). Outputs map
-  directly to the workshop `.env`; no concrete Azure identifiers are committed except in the gitignored
-  local `terraform.tfvars`.
+  vault (Application Insights and Log Analytics were both removed; no diagnostic-settings wiring
+  remains). Storage, Key Vault, Container Registry, Foundry account, AI Search, Cosmos DB, and the
+  managed identity all share one random suffix (`random_string.unique_suffix` in `main.tf`) for
+  consistent, collision-resistant naming. Outputs map directly to the workshop `.env`; no concrete
+  Azure identifiers are committed except in the gitignored local `terraform.tfvars`.
   `tf-post-deploy-validation.sh` reuses Azure CLI credentials, verifies the tfvars/variable-default-selected
   Azure context and Foundry resources, and runs a mini-model Responses API smoke test.
   `tf-apply.sh`/`tf-destroy.sh` run the full init/fmt/validate/apply (or validate/destroy) pipeline in
@@ -112,3 +114,11 @@ published API docs). `2385c81` removed Application Insights (Log Analytics works
 other resources' diagnostic settings).
 Pending structural change considered: added `build-and-operate-foundry-agents/NON-DOCKER-SETUP.md` as
 a Docker-free alternative to `SETUP.md`'s dev-container path, cross-linked from `SETUP.md`.
+Pending structural change considered: `build-and-operate-foundry-agents/infra/monitoring.tf` was
+deleted and Log Analytics removed entirely (the diagnostic-settings destination noted above as
+"remains" after the Application Insights removal has since also been removed; no monitoring/diagnostic
+resources remain in this root). The managed identity now shares `random_string.unique_suffix` with
+Storage/Key Vault/ACR/Foundry account/AI Search/Cosmos DB for naming consistency, though it doesn't
+strictly need it (identity names are unique per resource group, not globally). `apply.sh` was renamed
+`tf-apply.sh`, and a new `tf-destroy.sh` plus shared `tf-lib.sh` (sourced, not run directly) were
+added; every `infra/` operational script now uses a `tf-` prefix to sort/group together.

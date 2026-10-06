@@ -32,10 +32,8 @@ provider "azurerm" {
     "Microsoft.ContainerService",
     "Microsoft.ContainerRegistry",
     "Microsoft.DocumentDB",
-    "Microsoft.Insights",
     "Microsoft.KeyVault",
     "Microsoft.ManagedIdentity",
-    "Microsoft.OperationalInsights",
     "Microsoft.Search",
     "Microsoft.Storage",
   ]

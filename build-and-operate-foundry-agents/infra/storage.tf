@@ -38,12 +38,4 @@ module "storage" {
       principal_type             = var.operator_principal_type
     }
   }
-
-  diagnostic_settings_storage_account = {
-    hub = {
-      name                  = "${local.workload_name}-storage-diag"
-      metrics               = [{ category = "Transaction" }]
-      workspace_resource_id = azurerm_log_analytics_workspace.foundry.id
-    }
-  }
 }

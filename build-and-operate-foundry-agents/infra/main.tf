@@ -2,24 +2,27 @@ locals {
   workload_name         = "${var.name_prefix}-${var.resource_suffix}"
   compact_workload_name = replace(local.workload_name, "-", "")
   resource_group_name   = "rg-${local.workload_name}"
-  identity_name         = "id-${local.workload_name}"
-  # Storage, Key Vault, Container Registry, Foundry, AI Search, and Cosmos DB
-  # names are all globally unique across every Azure tenant (not just this
-  # subscription), so each gets the same random suffix to avoid colliding
-  # with another workshop attendee's deployment -- and, for Key Vault
-  # specifically, with any still-lingering soft-deleted vault of your own
-  # from a previous destroy cycle (recovering an old soft-deleted vault
-  # restores its original purge-protection setting, not this config's value).
+  # Storage, Key Vault, Container Registry, Foundry, AI Search, Cosmos DB, and
+  # the managed identity all share the same random suffix for consistent
+  # naming across the deployment. For Storage/Key Vault/ACR/Foundry/Search/
+  # Cosmos DB the suffix also avoids collisions with other workshop
+  # attendees' deployments, since those names are globally unique across
+  # every Azure tenant -- and, for Key Vault specifically, with any
+  # still-lingering soft-deleted vault of your own from a previous destroy
+  # cycle (recovering an old soft-deleted vault restores its original
+  # purge-protection setting, not this config's value). The managed
+  # identity's name only needs to be unique within this resource group, so
+  # it doesn't strictly need the suffix, but gets one anyway for consistency.
   # Truncate the base name first so the result never exceeds each resource
   # type's name-length limit, regardless of name_prefix/resource_suffix length.
-  storage_account_name         = "st${substr(local.compact_workload_name, 0, 16)}${random_string.unique_suffix.result}"
-  key_vault_name               = "kv${substr(local.compact_workload_name, 0, 16)}${random_string.unique_suffix.result}"
-  container_registry_name      = "cr${local.compact_workload_name}${random_string.unique_suffix.result}"
-  foundry_account_name         = "ai-${local.workload_name}-${random_string.unique_suffix.result}"
-  foundry_project_name         = var.foundry_project_name
-  search_service_name          = "srch-${local.workload_name}-${random_string.unique_suffix.result}"
-  cosmos_db_account_name       = "cosmos-${local.workload_name}-${random_string.unique_suffix.result}"
-  log_analytics_workspace_name = "log-${local.workload_name}"
+  identity_name           = "id-${local.workload_name}-${random_string.unique_suffix.result}"
+  storage_account_name    = "st${substr(local.compact_workload_name, 0, 16)}${random_string.unique_suffix.result}"
+  key_vault_name          = "kv${substr(local.compact_workload_name, 0, 16)}${random_string.unique_suffix.result}"
+  container_registry_name = "cr${local.compact_workload_name}${random_string.unique_suffix.result}"
+  foundry_account_name    = "ai-${local.workload_name}-${random_string.unique_suffix.result}"
+  foundry_project_name    = var.foundry_project_name
+  search_service_name     = "srch-${local.workload_name}-${random_string.unique_suffix.result}"
+  cosmos_db_account_name  = "cosmos-${local.workload_name}-${random_string.unique_suffix.result}"
 
   model_deployments = {
     for key, deployment in var.model_deployments : key => {

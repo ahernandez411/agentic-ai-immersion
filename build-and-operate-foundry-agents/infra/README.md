@@ -17,7 +17,6 @@ or Bastion host.
 - Azure AI Search service
 - Azure Key Vault
 - Azure Container Registry
-- Azure Monitor Log Analytics workspace
 - Azure role assignments and Microsoft Foundry project connections
 
 ## Prerequisites
@@ -118,9 +117,9 @@ The AzureRM provider registers the resource providers used by this template. If
 your organization restricts provider registration, have an administrator register
 `Microsoft.Authorization`, `Microsoft.CognitiveServices`,
 `Microsoft.ContainerRegistry`, `Microsoft.ContainerService`,
-`Microsoft.DocumentDB`, `Microsoft.Insights`, `Microsoft.KeyVault`,
+`Microsoft.DocumentDB`, `Microsoft.KeyVault`,
 `Microsoft.ManagedIdentity`,
-`Microsoft.OperationalInsights`, `Microsoft.Search`, and `Microsoft.Storage`
+`Microsoft.Search`, and `Microsoft.Storage`
 before deployment.
 
 The default local Terraform state is appropriate only for an individual

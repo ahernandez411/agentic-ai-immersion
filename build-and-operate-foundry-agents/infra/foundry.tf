@@ -28,16 +28,6 @@ module "foundry_account" {
 
   cognitive_deployments = local.model_deployments
 
-  diagnostic_settings = {
-    hub = {
-      name                  = "${local.workload_name}-account-diag"
-      log_categories        = ["Audit", "AzureOpenAIRequestUsage", "ManagedNetworkEvent", "RequestResponse"]
-      log_groups            = []
-      metric_categories     = ["AllMetrics"]
-      workspace_resource_id = azurerm_log_analytics_workspace.foundry.id
-    }
-  }
-
   depends_on = [
     azapi_resource_action.purge_foundry_account,
     module.storage,

@@ -138,11 +138,6 @@ output "user_assigned_identity_id" {
   value       = module.foundry_identity.resource_id
 }
 
-output "log_analytics_workspace_id" {
-  description = "Resource ID of the Log Analytics workspace."
-  value       = azurerm_log_analytics_workspace.foundry.id
-}
-
 output "workshop_environment" {
   description = "Environment-variable map for the workshop root .env file."
   value       = local.workshop_environment

@@ -24,11 +24,4 @@ module "key_vault" {
       skip_service_principal_aad_check = true
     }
   }
-
-  diagnostic_settings = {
-    hub = {
-      name                  = "${local.workload_name}-vault-diag"
-      workspace_resource_id = azurerm_log_analytics_workspace.foundry.id
-    }
-  }
 }

@@ -60,17 +60,3 @@ resource "azurerm_role_assignment" "search_identity_cognitive_services_user" {
   principal_type                   = "ServicePrincipal"
   skip_service_principal_aad_check = true
 }
-
-resource "azurerm_monitor_diagnostic_setting" "search" {
-  name                       = "${local.workload_name}-search-diag"
-  target_resource_id         = azurerm_search_service.foundry.id
-  log_analytics_workspace_id = azurerm_log_analytics_workspace.foundry.id
-
-  enabled_log {
-    category = "OperationLogs"
-  }
-
-  enabled_metric {
-    category = "AllMetrics"
-  }
-}

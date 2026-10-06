@@ -201,17 +201,6 @@ variable "cosmos_free_tier_enabled" {
   default     = false
 }
 
-variable "log_analytics_retention_in_days" {
-  description = "Log Analytics workspace retention period."
-  type        = number
-  default     = 30
-
-  validation {
-    condition     = contains([30, 60, 90, 120, 180, 270, 365, 550, 730], var.log_analytics_retention_in_days)
-    error_message = "log_analytics_retention_in_days must be a supported Log Analytics retention value."
-  }
-}
-
 variable "model_deployments" {
   description = "Model deployments created on the Microsoft Foundry resource. Confirm regional availability and quota before applying."
   type = map(object({
