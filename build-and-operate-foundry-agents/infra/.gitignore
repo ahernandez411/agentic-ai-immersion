@@ -5,6 +5,7 @@
 *.tfvars
 !*.tfvars.example
 *.tfplan
+logs/
 crash.log
 crash.*.log
 override.tf

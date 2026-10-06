@@ -27,7 +27,9 @@ set -o pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-LOG_FILE="$(mktemp /tmp/terraform-apply.XXXXXX.log)"
+LOG_DIR="$SCRIPT_DIR/logs"
+mkdir -p "$LOG_DIR"
+LOG_FILE="$LOG_DIR/apply-$(date +%Y%m%d-%H%M%S).log"
 DOH_RESOLVER="https://1.1.1.1/dns-query"
 
 status() { printf '\n==> %s\n' "$1"; }
