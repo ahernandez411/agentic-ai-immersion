@@ -201,25 +201,14 @@ variable "cosmos_free_tier_enabled" {
   default     = false
 }
 
-variable "application_insights_retention_in_days" {
-  description = "Application Insights retention period."
+variable "log_analytics_retention_in_days" {
+  description = "Log Analytics workspace retention period."
   type        = number
   default     = 30
 
   validation {
-    condition     = contains([30, 60, 90, 120, 180, 270, 365, 550, 730], var.application_insights_retention_in_days)
-    error_message = "application_insights_retention_in_days must be a supported Application Insights retention value."
-  }
-}
-
-variable "application_insights_daily_data_cap_in_gb" {
-  description = "Daily Application Insights ingestion cap in GB."
-  type        = number
-  default     = 1
-
-  validation {
-    condition     = var.application_insights_daily_data_cap_in_gb > 0
-    error_message = "application_insights_daily_data_cap_in_gb must be greater than zero."
+    condition     = contains([30, 60, 90, 120, 180, 270, 365, 550, 730], var.log_analytics_retention_in_days)
+    error_message = "log_analytics_retention_in_days must be a supported Log Analytics retention value."
   }
 }
 

@@ -14,7 +14,6 @@ locals {
   foundry_project_name         = var.foundry_project_name
   search_service_name          = "srch-${local.workload_name}"
   cosmos_db_account_name       = "cosmos-${local.workload_name}"
-  application_insights_name    = "appi-${local.workload_name}"
   log_analytics_workspace_name = "log-${local.workload_name}"
 
   model_deployments = {

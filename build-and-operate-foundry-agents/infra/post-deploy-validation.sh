@@ -135,6 +135,18 @@ read_first_mini_deployment() {
   ' "$TFVARS_PATH"
 }
 
+# variables.tf's model_deployments default is the workshop's documented set.
+# Used only when terraform.tfvars does not define its own model_deployments
+# block (read_model_deployment/read_first_mini_deployment both come up empty).
+default_model_deployment_name() {
+  case "$1" in
+    gpt_5_6_sol) printf '%s' "gpt-5.6-sol" ;;
+    gpt_5_4_mini) printf '%s' "gpt-5.4-mini" ;;
+    gpt_5_4_nano) printf '%s' "gpt-5.4-nano" ;;
+    text_embedding_3_large) printf '%s' "text-embedding-3-large" ;;
+  esac
+}
+
 az_json() {
   az "$@" --only-show-errors --output json 2>/dev/null
 }
@@ -197,17 +209,18 @@ CHAT_MODEL_KEY="$(read_tfvar_string chat_model_deployment_key)"
 VALIDATION_RESOURCE_GROUP_NAME="$(read_tfvar_string validation_resource_group_name)"
 VALIDATION_FOUNDRY_ACCOUNT_NAME="$(read_tfvar_string validation_foundry_account_name)"
 
-[[ -n "$SUBSCRIPTION_ID" ]] || die "Terraform variables" "subscription_id is missing"
-[[ -n "$TENANT_ID" ]] || die "Terraform variables" "tenant_id is missing"
-[[ -n "$LOCATION" ]] || die "Terraform variables" "location is missing"
-
-if [[ -z "$RESOURCE_GROUP_OVERRIDE" || -z "$FOUNDRY_ACCOUNT_OVERRIDE" ]]; then
-  [[ -n "$NAME_PREFIX" ]] || die "Terraform variables" "name_prefix is missing"
-  [[ -n "$RESOURCE_SUFFIX" ]] || die "Terraform variables" "resource_suffix is missing"
-fi
-
+# variables.tf now supplies workshop-ready defaults for most values, so
+# terraform.tfvars only has to pin subscription_id, tenant_id, and
+# operator_principal_id. Fall back to those same defaults here when
+# terraform.tfvars does not override them.
+[[ -n "$LOCATION" ]] || LOCATION="centralus"
+[[ -n "$NAME_PREFIX" ]] || NAME_PREFIX="marketplace"
+[[ -n "$RESOURCE_SUFFIX" ]] || RESOURCE_SUFFIX="abc123"
 [[ -n "$FOUNDRY_PROJECT_NAME" ]] || FOUNDRY_PROJECT_NAME="marketplace"
 [[ -n "$CHAT_MODEL_KEY" ]] || CHAT_MODEL_KEY="gpt_5_4_mini"
+
+[[ -n "$SUBSCRIPTION_ID" ]] || die "Terraform variables" "subscription_id is missing"
+[[ -n "$TENANT_ID" ]] || die "Terraform variables" "tenant_id is missing"
 
 WORKLOAD_NAME="${NAME_PREFIX}-${RESOURCE_SUFFIX}"
 RESOURCE_GROUP_NAME="${RESOURCE_GROUP_OVERRIDE:-${VALIDATION_RESOURCE_GROUP_NAME:-rg-${WORKLOAD_NAME}}}"
@@ -216,6 +229,9 @@ FOUNDRY_PROJECT_NAME="${FOUNDRY_PROJECT_OVERRIDE:-$FOUNDRY_PROJECT_NAME}"
 MINI_MODEL_NAME="${MINI_MODEL_OVERRIDE:-$(read_first_mini_deployment)}"
 if [[ -z "$MINI_MODEL_NAME" ]]; then
   MINI_MODEL_NAME="$(read_model_deployment "$CHAT_MODEL_KEY")"
+fi
+if [[ -z "$MINI_MODEL_NAME" ]]; then
+  MINI_MODEL_NAME="$(default_model_deployment_name "$CHAT_MODEL_KEY")"
 fi
 
 [[ -n "$MINI_MODEL_NAME" ]] || die "Terraform variables" \
@@ -349,7 +365,7 @@ if [[ "$MODEL_STATE" == "Succeeded" ]]; then
     pass "Mini model inference" "$MODEL_OUTPUT"
   else
     fail "Mini model inference" \
-      "$MINI_MODEL_NAME did not return text; verify private DNS/VPN access and Foundry RBAC"
+      "$MINI_MODEL_NAME did not return text; verify network access and Foundry RBAC"
   fi
 fi
 

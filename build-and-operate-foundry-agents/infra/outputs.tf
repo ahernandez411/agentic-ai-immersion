@@ -5,22 +5,21 @@ locals {
   blob_storage_url         = "https://${local.storage_account_name}.blob.core.windows.net"
 
   workshop_environment = {
-    APPLICATIONINSIGHTS_CONNECTION_STRING = module.application_insights.connection_string
-    AZURE_AI_MODEL_DEPLOYMENT_NAME        = var.model_deployments[var.chat_model_deployment_key].deployment_name
-    AZURE_AI_SEARCH_ENDPOINT              = local.search_endpoint
-    AZURE_OPENAI_CHAT_DEPLOYMENT_NAME     = var.model_deployments[var.chat_model_deployment_key].deployment_name
-    AZURE_OPENAI_ENDPOINT                 = local.azure_openai_endpoint
-    AZURE_PROJECT_NAME                    = local.foundry_project_name
-    AZURE_RESOURCE_GROUP                  = module.resource_group.name
-    AZURE_SUBSCRIPTION_ID                 = var.subscription_id
-    EMBEDDING_MODEL_DEPLOYMENT_NAME       = var.model_deployments[var.embedding_model_deployment_key].deployment_name
-    FOUNDRY_MODEL                         = var.model_deployments[var.chat_model_deployment_key].deployment_name
-    FOUNDRY_PROJECT_ENDPOINT              = local.foundry_project_endpoint
-    MARKETPLACE_BLOB_STORAGE_CONTAINER    = var.marketplace_blob_container_name
-    MARKETPLACE_BLOB_STORAGE_URL          = local.blob_storage_url
-    MARKETPLACE_RESOURCE_SUFFIX           = var.resource_suffix
-    PROJECT_RESOURCE_ID                   = azurerm_cognitive_account_project.foundry.id
-    TENANT_ID                             = var.tenant_id
+    AZURE_AI_MODEL_DEPLOYMENT_NAME     = var.model_deployments[var.chat_model_deployment_key].deployment_name
+    AZURE_AI_SEARCH_ENDPOINT           = local.search_endpoint
+    AZURE_OPENAI_CHAT_DEPLOYMENT_NAME  = var.model_deployments[var.chat_model_deployment_key].deployment_name
+    AZURE_OPENAI_ENDPOINT              = local.azure_openai_endpoint
+    AZURE_PROJECT_NAME                 = local.foundry_project_name
+    AZURE_RESOURCE_GROUP               = module.resource_group.name
+    AZURE_SUBSCRIPTION_ID              = var.subscription_id
+    EMBEDDING_MODEL_DEPLOYMENT_NAME    = var.model_deployments[var.embedding_model_deployment_key].deployment_name
+    FOUNDRY_MODEL                      = var.model_deployments[var.chat_model_deployment_key].deployment_name
+    FOUNDRY_PROJECT_ENDPOINT           = local.foundry_project_endpoint
+    MARKETPLACE_BLOB_STORAGE_CONTAINER = var.marketplace_blob_container_name
+    MARKETPLACE_BLOB_STORAGE_URL       = local.blob_storage_url
+    MARKETPLACE_RESOURCE_SUFFIX        = var.resource_suffix
+    PROJECT_RESOURCE_ID                = azurerm_cognitive_account_project.foundry.id
+    TENANT_ID                          = var.tenant_id
   }
 }
 
@@ -129,17 +128,6 @@ output "user_assigned_identity_id" {
   value       = module.foundry_identity.resource_id
 }
 
-output "application_insights_id" {
-  description = "Resource ID of Application Insights."
-  value       = module.application_insights.resource_id
-}
-
-output "application_insights_connection_string" {
-  description = "Application Insights connection string for hosted-agent tracing."
-  value       = module.application_insights.connection_string
-  sensitive   = true
-}
-
 output "log_analytics_workspace_id" {
   description = "Resource ID of the Log Analytics workspace."
   value       = azurerm_log_analytics_workspace.foundry.id
@@ -148,11 +136,9 @@ output "log_analytics_workspace_id" {
 output "workshop_environment" {
   description = "Environment-variable map for the workshop root .env file."
   value       = local.workshop_environment
-  sensitive   = true
 }
 
 output "workshop_env" {
-  description = "Newline-delimited workshop environment values. Treat this output as sensitive."
+  description = "Newline-delimited workshop environment values."
   value       = join("\n", [for key in sort(keys(local.workshop_environment)) : "${key}=${local.workshop_environment[key]}"])
-  sensitive   = true
 }

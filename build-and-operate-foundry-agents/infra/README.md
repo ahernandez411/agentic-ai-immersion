@@ -18,7 +18,6 @@ or Bastion host.
 - Azure Key Vault
 - Azure Container Registry
 - Azure Monitor Log Analytics workspace
-- Azure Monitor Application Insights
 - Azure role assignments and Microsoft Foundry project connections
 
 ## Prerequisites
@@ -118,8 +117,7 @@ your organization restricts provider registration, have an administrator registe
 `Microsoft.OperationalInsights`, `Microsoft.Search`, and `Microsoft.Storage`
 before deployment.
 
-Terraform state contains sensitive values, including the Application Insights
-connection string. The default local state is appropriate only for an individual
+The default local Terraform state is appropriate only for an individual
 workshop deployment. Configure a protected remote backend before using this
 configuration from a team or CI/CD system.
 
@@ -138,8 +136,7 @@ terraform output -raw workshop_env > workshop.env
 ```
 
 Merge those values into the repository-root `.env` without removing the other
-workshop settings. `workshop.env` contains an Application Insights connection
-string; do not commit or share it. The output includes:
+workshop settings. The output includes:
 
 - `FOUNDRY_PROJECT_ENDPOINT`
 - `PROJECT_RESOURCE_ID`
@@ -147,7 +144,6 @@ string; do not commit or share it. The output includes:
 - `EMBEDDING_MODEL_DEPLOYMENT_NAME`
 - `AZURE_OPENAI_ENDPOINT`
 - `AZURE_AI_SEARCH_ENDPOINT`
-- `APPLICATIONINSIGHTS_CONNECTION_STRING`
 - `MARKETPLACE_BLOB_STORAGE_URL`
 - `MARKETPLACE_BLOB_STORAGE_CONTAINER`
 - Azure tenant, subscription, resource group, project, and workshop suffix values

@@ -104,10 +104,12 @@ resource "azapi_resource" "foundry_account_capability_host" {
   parent_id                 = module.foundry_account.resource_id
   schema_validation_enabled = false
 
+  # No customerSubnet (that's what signals private/VNet mode); an otherwise
+  # empty body is how the live API enables the public, non-networked
+  # Standard Agent setup. The live backend rejects enablePublicHostingEnvironment
+  # even though it appears in the published API spec/docs.
   body = {
-    properties = {
-      enablePublicHostingEnvironment = true
-    }
+    properties = {}
   }
 }
 
