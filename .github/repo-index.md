@@ -25,15 +25,20 @@
   agent, evaluation, Search resource and project connection; `tools/cleanup_workshop.py` provides
   dry-run-first cleanup for one suffix or every workshop suffix without deleting shared infrastructure.
 - Workshop infrastructure: `build-and-operate-foundry-agents/infra/README.md` is the entry point for a
-  self-contained private Microsoft Foundry Standard Agent deployment. `variables.tf` and
-  `terraform.tfvars.example` configure Azure placement, naming, networking, models and capacity; Terraform owns
-  the VNet/private DNS, identity, Storage, Cosmos DB, AI Search, Foundry project/capability host, monitoring,
-  registry and vault. Outputs map directly to the workshop `.env`; no concrete Azure identifiers are committed.
-  `post-deploy-validation.sh` reuses Azure CLI credentials, verifies the tfvars-selected Azure context and
-  Foundry resources, and runs a mini-model Responses API smoke test.
-  `troubleshoot-private-endpoint.sh` performs read-only, continue-on-error diagnostics across the deployed
-  resource inventory, VNet/subnets, NSGs, private endpoints and NICs, private DNS zones and links, service
-  public-access settings, Foundry/operator/managed-identity RBAC, local private-IP resolution and activity logs.
+  self-contained, publicly-reachable Microsoft Foundry Standard Agent deployment (no VNet/private
+  endpoints/private DNS; Entra ID RBAC is the access boundary). `variables.tf` carries workshop-ready
+  defaults for naming, models and capacity; `terraform.tfvars` only pins `subscription_id`, `tenant_id`,
+  and `operator_principal_id`. Terraform owns identity, Storage, Cosmos DB, AI Search, Foundry
+  account/project/capability hosts (both account- and project-level; the account-level
+  `capabilityHosts` resource is required by the live API even though it's undocumented), registry and
+  vault; Log Analytics remains for diagnostic settings (Application Insights was removed). Outputs map
+  directly to the workshop `.env`; no concrete Azure identifiers are committed except in the gitignored
+  local `terraform.tfvars`.
+  `post-deploy-validation.sh` reuses Azure CLI credentials, verifies the tfvars/variable-default-selected
+  Azure context and Foundry resources, and runs a mini-model Responses API smoke test.
+- Non-Docker learner path: `build-and-operate-foundry-agents/NON-DOCKER-SETUP.md` is a Docker-free
+  alternative to `SETUP.md`'s dev-container path (native Python 3.14, `az`/`azd`, optional native
+  Redis instead of the dev-container's Redis/Azurite sidecars), cross-linked from `SETUP.md`.
 - Deployment: each lab's `hosted*/main.py` and minimal pinned requirements; `prepare.py` vendors shared files. Generated packages, credentials and runtime artifacts are not source.
 - Shell integration: `labs/deployment.py`; Bash is the learner shell, Python holds deployment validation/logic.
 - Notebooks: edit the adjacent `# %%` Python driver and regenerate with `tools/py_to_ipynb.py`; preserve exercise gates.
@@ -91,3 +96,15 @@ Pending structural change considered: `build-and-operate-foundry-agents/infra/po
 and its README/index navigation updates.
 Pending structural change considered: `build-and-operate-foundry-agents/infra/troubleshoot-private-endpoint.sh`
 and its README/index navigation updates.
+Baseline for the public-endpoint infra refactor: `2385c814463b5cdf7a7f6d92c952f7af96afb77d` ("remove
+app insights", already committed). History: `a9a6999` moved `build-and-operate-foundry-agents/infra/`
+from private VNet/private-endpoint isolation to public network access throughout (Foundry account,
+Storage, Cosmos DB, Search, Key Vault, ACR); `network.tf` and `infra/troubleshoot-private-endpoint.sh`
+were deleted; most `terraform.tfvars` values moved to `variables.tf` defaults, leaving only
+`subscription_id`/`tenant_id`/`operator_principal_id` as required inputs. `eea46b0` added an
+account-level `Microsoft.CognitiveServices/accounts/capabilityHosts` resource in `standard-agent.tf`
+(required by the live API for public Standard Agent setup, independent of the account's own
+published API docs). `2385c81` removed Application Insights (Log Analytics workspace remains for
+other resources' diagnostic settings).
+Pending structural change considered: added `build-and-operate-foundry-agents/NON-DOCKER-SETUP.md` as
+a Docker-free alternative to `SETUP.md`'s dev-container path, cross-linked from `SETUP.md`.

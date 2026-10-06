@@ -5,6 +5,7 @@
 Use the repository-level dev container, not a separate workshop container. Docker Desktop
 (Linux containers) and the VS Code Dev Containers extension are required locally.
 GitHub Codespaces is an alternative when your organization's policy and Azure network allow it.
+If Docker isn't available to you, see [NON-DOCKER-SETUP.md](./NON-DOCKER-SETUP.md) instead.
 
 1. Open the repository root and select **Dev Containers: Reopen in Container**.
 2. Wait for bootstrap to finish. It installs the root Python 3.14 dependency lock, the
